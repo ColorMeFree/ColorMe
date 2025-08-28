@@ -28,12 +28,16 @@ app.post('/generate-previews', async (c) => {
   try {
     console.log('Received prompt for preview generation:', prompt)
     
-    // Use Stability AI for simple, cheap image generation
-    const stabilityAIService = new StabilityAIService(c.env?.STABILITY_API_KEY || '')
-    const images = await stabilityAIService.generatePages(prompt, 4)
+    // Use placeholder images for now (Stability AI disabled)
     const sessionId = crypto.randomUUID()
+    const images = [
+      'https://via.placeholder.com/400x600/ffffff/000000?text=Coloring+Page+1&prompt=' + encodeURIComponent(prompt),
+      'https://via.placeholder.com/400x600/ffffff/000000?text=Coloring+Page+2&prompt=' + encodeURIComponent(prompt),
+      'https://via.placeholder.com/400x600/ffffff/000000?text=Coloring+Page+3&prompt=' + encodeURIComponent(prompt),
+      'https://via.placeholder.com/400x600/ffffff/000000?text=Coloring+Page+4&prompt=' + encodeURIComponent(prompt)
+    ]
     
-    console.log('Generated preview images:', images)
+    console.log('Generated placeholder preview images:', images)
     
     return c.json({ sessionId, images })
   } catch (error) {
@@ -82,9 +86,10 @@ app.post('/order-paid', async (c) => {
       try {
         console.log('Processing custom book order:', bookOrder)
         
-        // Generate remaining 26 pages using Stability AI
-        const stabilityAIService = new StabilityAIService(c.env?.STABILITY_API_KEY || '')
-        const remainingPages = await stabilityAIService.generateRemainingPages(bookOrder.prompt, 26)
+        // Generate remaining 26 pages using placeholder images (Stability AI disabled)
+        const remainingPages = Array.from({ length: 26 }, (_, i) => 
+          `https://via.placeholder.com/400x600/ffffff/000000?text=Page+${i + 5}&prompt=${encodeURIComponent(bookOrder.prompt)}`
+        )
         
         // TODO: Assemble 30-page PDF (4 chosen + 26 generated)
         // For now, combine placeholder pages
