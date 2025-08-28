@@ -6,8 +6,6 @@ export const CONFIG = {
   MAX_CYCLES: 5
 }
 
-
-
 // Validate required configuration
 export function validateConfig() {
   const required = ['SHOPIFY_DOMAIN', 'STOREFRONT_TOKEN', 'CUSTOM_BOOK_VARIANT_GID', 'BACKEND_URL']
