@@ -25,11 +25,6 @@ jobs:
     
     - name: Build
       run: npm run build
-      env:
-        SHOPIFY_DOMAIN: ${{ secrets.SHOPIFY_DOMAIN }}
-        SHOPIFY_STOREFRONT_TOKEN: ${{ secrets.SHOPIFY_STOREFRONT_TOKEN }}
-        SHOPIFY_VARIANT_GID: ${{ secrets.SHOPIFY_VARIANT_GID }}
-        BACKEND_URL: ${{ secrets.BACKEND_URL }}
     
     - name: Deploy to GitHub Pages
       if: github.ref == 'refs/heads/main'
