@@ -10,7 +10,7 @@ app.use('*', cors())
 
 // Health check endpoint
 app.get('/', async (c) => {
-  const stabilityAIService = new StabilityAIService(c.env.STABILITY_API_KEY || '')
+  const stabilityAIService = new StabilityAIService(c.env?.STABILITY_API_KEY || '')
   const stabilityHealth = await stabilityAIService.healthCheck()
   
   return c.json({ 
@@ -29,7 +29,7 @@ app.post('/generate-previews', async (c) => {
     console.log('Received prompt for preview generation:', prompt)
     
     // Use Stability AI for simple, cheap image generation
-    const stabilityAIService = new StabilityAIService(c.env.STABILITY_API_KEY || '')
+    const stabilityAIService = new StabilityAIService(c.env?.STABILITY_API_KEY || '')
     const images = await stabilityAIService.generatePages(prompt, 4)
     const sessionId = crypto.randomUUID()
     
@@ -83,7 +83,7 @@ app.post('/order-paid', async (c) => {
         console.log('Processing custom book order:', bookOrder)
         
         // Generate remaining 26 pages using Stability AI
-        const stabilityAIService = new StabilityAIService(c.env.STABILITY_API_KEY || '')
+        const stabilityAIService = new StabilityAIService(c.env?.STABILITY_API_KEY || '')
         const remainingPages = await stabilityAIService.generateRemainingPages(bookOrder.prompt, 26)
         
         // TODO: Assemble 30-page PDF (4 chosen + 26 generated)
@@ -137,6 +137,7 @@ app.get('/print-job/:jobId', async (c) => {
 // Stability AI service health check
 app.get('/stability-ai/health', async (c) => {
   try {
+    const stabilityAIService = new StabilityAIService(c.env?.STABILITY_API_KEY || '')
     const health = await stabilityAIService.healthCheck()
     return c.json(health)
   } catch (error) {
@@ -151,7 +152,7 @@ app.post('/webhooks/shopify/orders/paid', async (c) => {
     const hmac = c.req.header('X-Shopify-Hmac-Sha256')
     
     // Verify webhook signature
-    if (!shopifyWebhookHandler.verifyWebhookSignature(body, hmac || '', process.env.SHOPIFY_WEBHOOK_SECRET || '')) {
+    if (!shopifyWebhookHandler.verifyWebhookSignature(body, hmac || '', c.env?.SHOPIFY_WEBHOOK_SECRET || '')) {
       return c.json({ error: 'Invalid webhook signature' }, 401)
     }
     

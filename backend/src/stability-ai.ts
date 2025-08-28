@@ -144,7 +144,7 @@ export class StabilityAIService {
     // TODO: Implement actual upload to Cloudflare R2
     // const uploadUrl = await uploadToR2(imageBuffer, `coloring-pages/${timestamp}-${randomId}.png`)
     
-    return `https://colorbook-backend.3dworldjames.workers.dev/coloring-pages/${timestamp}-${randomId}.png`
+    return `https://your-backend.workers.dev/coloring-pages/${timestamp}-${randomId}.png`
   }
 
   // Generate multiple pages for a book
@@ -197,7 +197,7 @@ export class StabilityAIService {
       })
       
       if (response.ok) {
-        const data = await response.json()
+        const data = await response.json() as { credits: number }
         return { 
           status: 'healthy', 
           message: `Stability AI connected. Credits: ${data.credits}` 

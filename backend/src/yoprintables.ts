@@ -133,7 +133,13 @@ export class YoprintablesService {
     // 5. Return the processed URL
     
     // For now, return a realistic URL
-    return `https://colorbook-backend.3dworldjames.workers.dev/processed-images/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.png`
+    return `https://your-backend.workers.dev/processed-images/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.png`
+  }
+
+  private generateImageUrl(imageId: string): string {
+    // In production, this would return a real URL
+    // For now, return a placeholder
+    return `https://your-backend.workers.dev/processed-images/${imageId}.png`
   }
 
   // Main method: Complete workflow
@@ -189,20 +195,16 @@ export class YoprintablesService {
           remainingPages.push(processedUrls[0])
         } catch (error) {
           console.error(`Failed to generate page ${i + 5}:`, error)
-          // Fallback placeholder
-          remainingPages.push(`https://via.placeholder.com/400x600/ffffff/000000?text=Page+${i + 5}`)
+          // Skip this page instead of using placeholder
+          continue
         }
       }
       
       return remainingPages
     } catch (error) {
       console.error('Failed to generate remaining pages:', error)
-      // Return fallback placeholders
-      const fallbackPages = []
-      for (let i = 0; i < 26; i++) {
-        fallbackPages.push(`https://via.placeholder.com/400x600/ffffff/000000?text=Page+${i + 5}`)
-      }
-      return fallbackPages
+      // Return error instead of fallback placeholders
+      throw new Error('Failed to generate remaining pages')
     }
   }
 

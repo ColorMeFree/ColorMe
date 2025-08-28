@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { createCart, addCustomBookToCart } from '../lib/shopify'
 import { track } from '../lib/analytics'
+import { CONFIG } from '../config'
 
 // Popular books for post-purchase upsell
 const popularUpsellBooks = [
@@ -45,7 +46,7 @@ export default function CheckoutFlow({ selected, prompt, onClose, onComplete }) 
       const cartWithBook = await addCustomBookToCart(newCart.id, {
         designId: selected.id,
         prompt: prompt,
-        variantGID: process.env.SHOPIFY_VARIANT_GID || 'gid://shopify/ProductVariant/1234567890'
+        variantGID: CONFIG.CUSTOM_BOOK_VARIANT_GID
       })
       
       setCart(cartWithBook)
@@ -123,7 +124,7 @@ export default function CheckoutFlow({ selected, prompt, onClose, onComplete }) 
         await addCustomBookToCart(newCart.id, {
           designId: `upsell-${book.id}`,
           prompt: book.title,
-          variantGID: process.env.SHOPIFY_VARIANT_GID || 'gid://shopify/ProductVariant/1234567890'
+          variantGID: CONFIG.CUSTOM_BOOK_VARIANT_GID
         })
       }
       

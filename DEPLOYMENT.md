@@ -19,13 +19,14 @@
 ## Frontend Deployment (GitHub Pages)
 
 ### 1. Environment Variables
-Create a `.env.local` file in the root directory (this will be gitignored):
+Copy the example environment file and fill in your values:
 
 ```bash
-SHOPIFY_DOMAIN=your-shop.myshopify.com
-SHOPIFY_STOREFRONT_TOKEN=your_public_storefront_token
-SHOPIFY_VARIANT_GID=gid://shopify/ProductVariant/your_variant_id
-BACKEND_URL=https://colorbook-backend.your-subdomain.workers.dev
+# Copy the example environment file
+cp env.example .env.local
+
+# Edit .env.local with your actual values
+# See env.example for required variables
 ```
 
 ### 2. Build and Deploy
@@ -72,10 +73,8 @@ wrangler deploy
 ## Environment Variables Summary
 
 ### Frontend (Public - Safe to expose)
-- `SHOPIFY_DOMAIN`: Your shop domain
-- `SHOPIFY_STOREFRONT_TOKEN`: Public storefront token
-- `SHOPIFY_VARIANT_GID`: Product variant ID
-- `BACKEND_URL`: Your Cloudflare Workers URL
+- Copy `env.example` to `.env.local` and fill in your values
+- See `env.example` for the complete list of required variables
 
 ### Backend (Private - Keep secret)
 - `SHOPIFY_WEBHOOK_SECRET`: For order verification
