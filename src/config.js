@@ -1,7 +1,7 @@
 export const CONFIG = {
-  SHOPIFY_DOMAIN: 'e76594-67.myshopify.com',
-  STOREFRONT_TOKEN: '338f4c6aa8a33a47ec7aec66932a402c',
-  CUSTOM_BOOK_VARIANT_GID: 'gid://shopify/ProductVariant/50284749029666',
-  BACKEND_URL: 'https://colorbook-backend-worldfrees.3dworldjames.workers.dev',
+  SHOPIFY_DOMAIN: process.env.SHOPIFY_DOMAIN || 'your-shop.myshopify.com',
+  STOREFRONT_TOKEN: process.env.SHOPIFY_STOREFRONT_TOKEN || 'your-storefront-token',
+  CUSTOM_BOOK_VARIANT_GID: process.env.SHOPIFY_VARIANT_GID || 'gid://shopify/ProductVariant/1234567890',
+  BACKEND_URL: process.env.BACKEND_URL || 'https://your-backend.workers.dev',
   MAX_CYCLES: 5
 }

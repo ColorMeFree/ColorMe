@@ -79,4 +79,4 @@ export class ShopifyService {
 }
 
 // Export singleton instance
-export const shopifyService = new ShopifyService('your-webhook-secret')
+export const shopifyService = new ShopifyService(process.env.SHOPIFY_WEBHOOK_SECRET || '')
