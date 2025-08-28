@@ -2,80 +2,23 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { luluService } from './lulu'
 import { shopifyService } from './shopify'
+import { StabilityAIService } from './stability-ai'
+import { shopifyWebhookHandler } from './shopify-webhooks'
 
 const app = new Hono()
 app.use('*', cors())
 
-// Yoprintables integration for free coloring pages
-class YoprintablesService {
-  mapPromptToCategory(prompt: string) {
-    const lowerPrompt = prompt.toLowerCase()
-    
-    if (lowerPrompt.includes('car') || lowerPrompt.includes('vehicle') || lowerPrompt.includes('truck')) {
-      return 'vehicles'
-    }
-    if (lowerPrompt.includes('dinosaur') || lowerPrompt.includes('dino')) {
-      return 'dinosaurs'
-    }
-    if (lowerPrompt.includes('space') || lowerPrompt.includes('planet') || lowerPrompt.includes('rocket')) {
-      return 'space'
-    }
-    if (lowerPrompt.includes('underwater') || lowerPrompt.includes('fish') || lowerPrompt.includes('ocean')) {
-      return 'underwater'
-    }
-    if (lowerPrompt.includes('castle') || lowerPrompt.includes('princess') || lowerPrompt.includes('knight')) {
-      return 'castle'
-    }
-    if (lowerPrompt.includes('animal') || lowerPrompt.includes('cat') || lowerPrompt.includes('dog')) {
-      return 'animals'
-    }
-    if (lowerPrompt.includes('robot') || lowerPrompt.includes('machine')) {
-      return 'robots'
-    }
-    if (lowerPrompt.includes('sport') || lowerPrompt.includes('ball') || lowerPrompt.includes('game')) {
-      return 'sports'
-    }
-    
-    return 'animals'
-  }
-
-  async generatePages(prompt: string) {
-    const category = this.mapPromptToCategory(prompt)
-    
-    // For MVP, return placeholder images that look like coloring pages
-    // These will be replaced with actual yoprintables.com images
-    const placeholderPages = [
-      `https://via.placeholder.com/400x600/ffffff/000000?text=${encodeURIComponent(category)}+Page+1`,
-      `https://via.placeholder.com/400x600/ffffff/000000?text=${encodeURIComponent(category)}+Page+2`,
-      `https://via.placeholder.com/400x600/ffffff/000000?text=${encodeURIComponent(category)}+Page+3`,
-      `https://via.placeholder.com/400x600/ffffff/000000?text=${encodeURIComponent(category)}+Page+4`
-    ]
-    
-    return placeholderPages
-  }
-
-  async generateRemainingPages(prompt: string, styleSeed: string) {
-    const category = this.mapPromptToCategory(prompt)
-    
-    const remainingPages = []
-    for (let i = 0; i < 26; i++) {
-      const pageUrl = `https://via.placeholder.com/400x600/ffffff/000000?text=${encodeURIComponent(category)}+Page+${i + 5}&style=${styleSeed}`
-      remainingPages.push(pageUrl)
-    }
-    
-    return remainingPages
-  }
-}
-
-const yoprintables = new YoprintablesService()
-
 // Health check endpoint
-app.get('/', (c) => {
+app.get('/', async (c) => {
+  const stabilityAIService = new StabilityAIService(c.env.STABILITY_API_KEY || '')
+  const stabilityHealth = await stabilityAIService.healthCheck()
+  
   return c.json({ 
     status: 'ok', 
     service: 'ColorMeFree Backend',
     version: '1.0.0',
-    features: ['yoprintables', 'lulu', 'shopify']
+    features: ['stability-ai', 'lulu', 'shopify'],
+    stabilityAI: stabilityHealth
   })
 })
 
@@ -83,11 +26,18 @@ app.post('/generate-previews', async (c) => {
   const { prompt } = await c.req.json()
   
   try {
-    const images = await yoprintables.generatePages(prompt)
+    console.log('Received prompt for preview generation:', prompt)
+    
+    // Use Stability AI for simple, cheap image generation
+    const stabilityAIService = new StabilityAIService(c.env.STABILITY_API_KEY || '')
+    const images = await stabilityAIService.generatePages(prompt, 4)
     const sessionId = crypto.randomUUID()
+    
+    console.log('Generated preview images:', images)
     
     return c.json({ sessionId, images })
   } catch (error) {
+    console.error('Failed to generate previews:', error)
     return c.json({ error: 'Failed to generate previews' }, 500)
   }
 })
@@ -103,6 +53,8 @@ app.post('/lock-design', async (c) => {
   // await c.env.COLORBOOK_KV.put(`design:${designId}`, JSON.stringify({
   //   sessionId, chosen, prompt, styleSeed, createdAt: Date.now()
   // }))
+  
+  console.log('Design locked:', { designId, styleSeed, prompt })
   
   return c.json({ designId, styleSeed })
 })
@@ -128,8 +80,11 @@ app.post('/order-paid', async (c) => {
     // Process each custom book order
     for (const bookOrder of customBookOrders) {
       try {
-        // Generate remaining 26 pages
-        const remainingPages = await yoprintables.generateRemainingPages(bookOrder.prompt, bookOrder.designId)
+        console.log('Processing custom book order:', bookOrder)
+        
+        // Generate remaining 26 pages using Stability AI
+        const stabilityAIService = new StabilityAIService(c.env.STABILITY_API_KEY || '')
+        const remainingPages = await stabilityAIService.generateRemainingPages(bookOrder.prompt, 26)
         
         // TODO: Assemble 30-page PDF (4 chosen + 26 generated)
         // For now, combine placeholder pages
@@ -176,6 +131,57 @@ app.get('/print-job/:jobId', async (c) => {
     return c.json(status)
   } catch (error) {
     return c.json({ error: 'Failed to get print job status' }, 500)
+  }
+})
+
+// Stability AI service health check
+app.get('/stability-ai/health', async (c) => {
+  try {
+    const health = await stabilityAIService.healthCheck()
+    return c.json(health)
+  } catch (error) {
+    return c.json({ status: 'error', message: 'Health check failed' }, 500)
+  }
+})
+
+// Shopify webhook for order completion
+app.post('/webhooks/shopify/orders/paid', async (c) => {
+  try {
+    const body = await c.req.text()
+    const hmac = c.req.header('X-Shopify-Hmac-Sha256')
+    
+    // Verify webhook signature
+    if (!shopifyWebhookHandler.verifyWebhookSignature(body, hmac || '', process.env.SHOPIFY_WEBHOOK_SECRET || '')) {
+      return c.json({ error: 'Invalid webhook signature' }, 401)
+    }
+    
+    const webhookData = JSON.parse(body)
+    const customerData = await shopifyWebhookHandler.handleOrderCompleted(webhookData)
+    
+    if (customerData) {
+      console.log('Order completed, customer data captured:', customerData.email)
+    }
+    
+    return c.text('ok')
+  } catch (error) {
+    console.error('Webhook processing error:', error)
+    return c.json({ error: 'Failed to process webhook' }, 500)
+  }
+})
+
+// Get customer data for upsell (for frontend)
+app.get('/customer/:email', async (c) => {
+  try {
+    const email = c.req.param('email')
+    const customerData = await shopifyWebhookHandler.getCustomerData(email)
+    
+    if (customerData) {
+      return c.json(customerData)
+    } else {
+      return c.json({ error: 'Customer not found' }, 404)
+    }
+  } catch (error) {
+    return c.json({ error: 'Failed to get customer data' }, 500)
   }
 })
 

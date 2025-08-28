@@ -1,4 +1,4 @@
-name = "colorbook-backend"
+name = "colorbook-backend-worldfrees"
 main = "src/index.ts"
 compatibility_date = "2024-11-12"
 
