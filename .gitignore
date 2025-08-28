@@ -102,3 +102,6 @@ wrangler.toml.bak
 # Local development
 *.local
 
+# Secret configuration files
+config.secret
+

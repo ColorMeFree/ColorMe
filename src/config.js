@@ -1,10 +1,12 @@
 export const CONFIG = {
-  SHOPIFY_DOMAIN: process.env.SHOPIFY_DOMAIN || '',
-  STOREFRONT_TOKEN: process.env.SHOPIFY_STOREFRONT_TOKEN || '',
-  CUSTOM_BOOK_VARIANT_GID: process.env.SHOPIFY_VARIANT_GID || '',
-  BACKEND_URL: process.env.BACKEND_URL || '',
+  SHOPIFY_DOMAIN: import.meta.env.VITE_SHOPIFY_DOMAIN || '',
+  STOREFRONT_TOKEN: import.meta.env.VITE_SHOPIFY_STOREFRONT_TOKEN || '',
+  CUSTOM_BOOK_VARIANT_GID: import.meta.env.VITE_SHOPIFY_VARIANT_GID || '',
+  BACKEND_URL: import.meta.env.VITE_BACKEND_URL || '',
   MAX_CYCLES: 5
 }
+
+
 
 // Validate required configuration
 export function validateConfig() {
