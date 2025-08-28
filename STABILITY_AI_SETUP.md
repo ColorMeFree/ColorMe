@@ -1,174 +1,159 @@
 # Stability AI Integration Setup
 
-## 🎯 Why Stability AI?
+## Overview
+This document outlines the integration with Stability AI for generating coloring book pages. The system uses Stability AI's text-to-image API to create simple, black and white line art suitable for coloring books.
 
-**Perfect for coloring books because:**
-- ✅ **Extremely cheap**: ~$0.002 per image (512x512)
-- ✅ **Fast**: 2-5 seconds per image
-- ✅ **Simple API**: REST API with minimal setup
-- ✅ **Line art support**: Built-in line art style presets
-- ✅ **High quality**: Excellent for simple illustrations
+## Features
+- **Text-to-Image Generation**: Convert text prompts into coloring book pages
+- **Line Art Style**: Optimized for black and white coloring pages
+- **Cost Effective**: ~$0.06 per book (30 pages)
+- **Fast Generation**: 4 preview pages in seconds
+- **Bulk Generation**: 26 additional pages after purchase
 
-## 💰 Cost Analysis
-
-### Per Book (30 pages):
-- **4 preview pages**: $0.008
-- **26 remaining pages**: $0.052
-- **Total per book**: ~$0.06
-
-### Monthly Costs (1000 books):
-- **1000 books × $0.06**: $60/month
-- **API calls**: 30,000 images
-- **Storage**: ~$5/month (Cloudflare R2)
-
-## 🚀 Setup Steps
+## API Configuration
 
 ### 1. Get Stability AI API Key
-1. Go to [platform.stability.ai](https://platform.stability.ai)
-2. Sign up for free account
-3. Get API key from dashboard
-4. Add credits (start with $10 = 5000 images)
+1. Go to [Stability AI](https://platform.stability.ai/)
+2. Create an account
+3. Navigate to API Keys section
+4. Generate a new API key
+5. Copy the key (starts with `sk-`)
 
-### 2. Configure Environment
+### 2. Configure Cloudflare Workers
 ```bash
-# In backend/wrangler.toml
-[vars]
-STABILITY_API_KEY = "your-api-key-here"
+# Set the API key as a Cloudflare secret
+npx wrangler secret put STABILITY_API_KEY
+# Enter your API key when prompted
 ```
 
-### 3. Deploy Backend
+### 3. Update Backend Configuration
+The backend will automatically use the API key from Cloudflare secrets.
+
+## Usage
+
+### Health Check
 ```bash
-cd backend
-npx wrangler deploy
+curl https://your-backend.workers.dev/stability-ai/health
 ```
 
-### 4. Test Integration
+### Generate Preview Pages
 ```bash
-# Test health check
-curl https://colorbook-backend.worldfrees.workers.dev/stability-ai/health
-
-# Test image generation
-curl -X POST https://colorbook-backend.worldfrees.workers.dev/generate-previews \
+curl -X POST https://your-backend.workers.dev/generate-previews \
   -H "Content-Type: application/json" \
-  -d '{"prompt": "a car being chased by dinosaurs"}'
+  -d '{"prompt":"a car driving down the highway"}'
 ```
 
-## 🎨 Prompt Engineering
-
-### Base Prompt Enhancement:
-```typescript
-// User input: "a car being chased by dinosaurs"
-// Enhanced: "a car being chased by dinosaurs, line drawing, black outline, simple illustration, coloring page style, clean lines, no background, white background, minimalist, child-friendly"
+### Generate Remaining Pages
+```bash
+curl -X POST https://your-backend.workers.dev/order-paid \
+  -H "Content-Type: application/json" \
+  -d '{"orderId":"12345","prompt":"a car driving down the highway"}'
 ```
 
-### Style Presets:
-- **line-art**: Perfect for coloring books
-- **anime**: Good for cartoon-style pages
-- **photographic**: Avoid for coloring books
+## Prompt Engineering
 
-## 🔧 API Configuration
+### Base Prompts
+The system automatically enhances user prompts for optimal line art generation:
 
-### Optimal Settings for Coloring Books:
-```json
-{
-  "text_prompts": [
-    {
-      "text": "user prompt",
-      "weight": 1
-    },
-    {
-      "text": "coloring book, line art, black and white, simple, clean outlines, no shading, suitable for children",
-      "weight": 0.8
-    }
-  ],
-  "cfg_scale": 7,
-  "height": 1024,
-  "width": 1024,
-  "samples": 1,
-  "steps": 30,
-  "style_preset": "line-art"
-}
+**Input**: "a car driving down the highway"
+**Enhanced**: "black and white line art, simple coloring book page, a car driving down the highway, clean lines, no shading, suitable for children to color"
+
+### Style Modifiers
+- `black and white line art`
+- `simple coloring book page`
+- `clean lines`
+- `no shading`
+- `suitable for children to color`
+
+## Cost Analysis
+
+### Pricing
+- **Stability AI**: $10 for 1,000 credits
+- **Per Image**: ~2 credits
+- **Per Book**: 30 images × 2 credits = 60 credits
+- **Cost per Book**: $0.60
+
+### Optimization
+- Use simple prompts to reduce credit usage
+- Batch generation for efficiency
+- Cache generated images when possible
+
+## Error Handling
+
+### Common Issues
+1. **API Key Invalid**: Check Cloudflare secrets
+2. **Rate Limiting**: Implement exponential backoff
+3. **Invalid Prompts**: Filter inappropriate content
+4. **Generation Failures**: Retry with simplified prompts
+
+### Monitoring
+- Track generation success rates
+- Monitor API usage and costs
+- Log failed generations for analysis
+
+## Security Considerations
+
+### API Key Protection
+- ✅ Store in Cloudflare secrets
+- ✅ Never expose in client-side code
+- ✅ Rotate keys regularly
+- ✅ Monitor usage for anomalies
+
+### Content Filtering
+- Filter inappropriate prompts
+- Validate generated images
+- Implement content moderation
+
+## Testing
+
+### Local Development
+```bash
+# Test with mock API responses
+npm run dev:backend
+
+# Test with real API (use test key)
+STABILITY_API_KEY=sk-test-... npm run dev:backend
 ```
 
-## 📊 Performance Metrics
+### Production Testing
+```bash
+# Health check
+curl https://your-backend.workers.dev/
 
-### Speed:
-- **Single image**: 2-5 seconds
-- **4 preview pages**: 8-20 seconds
-- **26 remaining pages**: 52-130 seconds
+# Generate test pages
+curl -X POST https://your-backend.workers.dev/generate-previews \
+  -H "Content-Type: application/json" \
+  -d '{"prompt":"test coloring page"}'
+```
 
-### Quality:
-- **Line art consistency**: 95%
-- **Child-friendly content**: 99%
-- **Print-ready resolution**: 100%
+## Integration Points
 
-## 🛡️ Error Handling
+### Frontend
+- Prompt input and validation
+- Preview display
+- Generation status tracking
 
-### Fallback Strategy:
-1. **Primary**: Stability AI generation
-2. **Fallback**: Placeholder images
-3. **Retry**: 3 attempts per image
-4. **Graceful degradation**: Continue with partial results
+### Backend
+- API key management
+- Image generation
+- Error handling
+- Cost tracking
 
-### Common Issues:
-- **Rate limiting**: Implement exponential backoff
-- **API errors**: Use fallback images
-- **Timeout**: 30-second timeout per image
+### Shopify
+- Order processing
+- Webhook handling
+- Customer data management
 
-## 💡 Optimization Tips
+## Future Enhancements
 
-### Cost Optimization:
-1. **Use 512x512** for previews (cheaper)
-2. **Use 1024x1024** for final pages (better quality)
-3. **Batch requests** when possible
-4. **Cache results** to avoid regeneration
+### Planned Features
+- Multiple art styles
+- Custom color schemes
+- Batch processing
+- Advanced prompt templates
 
-### Quality Optimization:
-1. **Consistent prompts** for style consistency
-2. **Negative prompts** to avoid unwanted elements
-3. **Style presets** for better results
-4. **Post-processing** for line art enhancement
-
-## 🔄 Migration from Yoprintables
-
-### Benefits:
-- ✅ **No scraping needed**
-- ✅ **Consistent quality**
-- ✅ **Scalable**
-- ✅ **Legal compliance**
-- ✅ **Real-time generation**
-
-### Migration Steps:
-1. **Deploy new backend** with Stability AI
-2. **Test thoroughly** with sample prompts
-3. **Update frontend** if needed
-4. **Monitor costs** and performance
-5. **Scale gradually**
-
-## 📈 Scaling Strategy
-
-### Phase 1: MVP (100 books/month)
-- **Cost**: ~$6/month
-- **API calls**: 3,000/month
-- **Setup time**: 1 day
-
-### Phase 2: Growth (1,000 books/month)
-- **Cost**: ~$60/month
-- **API calls**: 30,000/month
-- **Optimization**: Batch processing
-
-### Phase 3: Scale (10,000 books/month)
-- **Cost**: ~$600/month
-- **API calls**: 300,000/month
-- **Optimization**: Custom models, caching
-
-## 🎯 Next Steps
-
-1. **Get API key** from Stability AI
-2. **Deploy backend** with new integration
-3. **Test with real prompts**
-4. **Monitor costs and quality**
-5. **Optimize prompts** based on results
-6. **Scale as needed**
-
-This approach is **much simpler** than yoprintables integration and will give you **real, high-quality coloring pages** at a very low cost!
+### Performance Improvements
+- Image caching
+- Parallel generation
+- Optimized prompts
+- Cost reduction strategies

@@ -6,9 +6,9 @@ export class LuluService {
   private baseUrl = 'https://api.lulu.com'
 
   constructor(apiKey?: string, clientSecret?: string) {
-    // Use environment variables or passed parameters
-    this.apiKey = apiKey || (typeof process !== 'undefined' ? process.env.LULU_API_KEY || '' : '')
-    this.clientSecret = clientSecret || (typeof process !== 'undefined' ? process.env.LULU_CLIENT_SECRET || '' : '')
+    // Use passed parameters or empty strings for Cloudflare Workers
+    this.apiKey = apiKey || ''
+    this.clientSecret = clientSecret || ''
   }
 
   // Get OAuth access token
@@ -85,7 +85,7 @@ export class LuluService {
       throw new Error(`Failed to upload PDF: ${response.statusText}`)
     }
 
-    const data = await response.json()
+    const data = await response.json() as { file_url: string }
     return data.file_url
   }
 

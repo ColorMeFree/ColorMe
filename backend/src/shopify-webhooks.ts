@@ -93,19 +93,10 @@ export class ShopifyWebhookHandler {
       // const data = await c.env.COLORBOOK_KV.get(`customer:${email}`)
       // return data ? JSON.parse(data) : null
       
-      // For now, return mock data
-      return {
-        email: email,
-        firstName: 'John',
-        lastName: 'Doe',
-        address1: '123 Main St',
-        city: 'Anytown',
-        province: 'CA',
-        zip: '12345',
-        country: 'US',
-        totalPrice: 24.99,
-        orderId: 'mock-order-id'
-      }
+      // For now, return null to indicate no data available
+      // This will be properly implemented when Cloudflare KV is set up
+      console.log('Customer data requested for email:', email, '- KV not yet configured')
+      return null
       
     } catch (error) {
       console.error('Failed to get customer data:', error)

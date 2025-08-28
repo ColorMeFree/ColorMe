@@ -41,11 +41,11 @@ ColorMeFree is a web application that lets parents create personalized 30-page c
 
 3. **Set up environment variables**
    ```bash
-   # Create .env.local in root directory
-   SHOPIFY_DOMAIN=your-shop.myshopify.com
-   SHOPIFY_STOREFRONT_TOKEN=your_public_storefront_token
-   SHOPIFY_VARIANT_GID=gid://shopify/ProductVariant/your_variant_id
-   BACKEND_URL=https://colorbook-backend.your-subdomain.workers.dev
+   # Copy the example environment file
+   cp env.example .env.local
+   
+   # Edit .env.local with your actual values
+   # See env.example for required variables
    ```
 
 4. **Start development server**
@@ -113,14 +113,13 @@ colorbook-site/
 
 **Frontend (.env.local)**
 ```bash
-SHOPIFY_DOMAIN=your-shop.myshopify.com
-SHOPIFY_STOREFRONT_TOKEN=your_public_storefront_token
-SHOPIFY_VARIANT_GID=gid://shopify/ProductVariant/your_variant_id
-BACKEND_URL=https://colorbook-backend.your-subdomain.workers.dev
+# Copy env.example to .env.local and fill in your values
+# See env.example for the complete list of required variables
 ```
 
 **Backend (Cloudflare Secrets)**
 ```bash
+# Set these using wrangler secret put SECRET_NAME
 SHOPIFY_WEBHOOK_SECRET=your_webhook_secret
 LULU_API_KEY=your_lulu_api_key
 LULU_CLIENT_SECRET=your_lulu_client_secret

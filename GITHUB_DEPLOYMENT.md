@@ -33,16 +33,14 @@ git push -u origin main
 ## Step 2: Environment Variables Setup
 
 ### Frontend Environment Variables
-Create a `.env.local` file in the root directory:
+Copy the example environment file and fill in your values:
 
 ```bash
-# Shopify Configuration
-SHOPIFY_DOMAIN=your-shop.myshopify.com
-SHOPIFY_STOREFRONT_TOKEN=your_public_storefront_token
-SHOPIFY_VARIANT_GID=gid://shopify/ProductVariant/your_variant_id
+# Copy the example environment file
+cp env.example .env.local
 
-# Backend URL (will be set after Cloudflare deployment)
-BACKEND_URL=https://colorbook-backend.your-subdomain.workers.dev
+# Edit .env.local with your actual values
+# See env.example for required variables
 ```
 
 ### Backend Environment Variables (Cloudflare)
