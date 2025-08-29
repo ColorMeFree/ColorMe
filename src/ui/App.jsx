@@ -494,18 +494,6 @@ export default function App() {
           </section>
         )}
 
-              {/* Featured Dragon Book */}
-              <section className="mb-12">
-                <div className="text-center mb-8">
-                  <h3 className="text-3xl font-bold text-gray-800 mb-4">Featured Book</h3>
-                  <p className="text-lg text-gray-600">Check out our latest AI-generated coloring book!</p>
-                </div>
-                
-                <div className="max-w-2xl mx-auto">
-                  <BookPreview book={dragonBook} />
-                </div>
-              </section>
-
               {/* Popular Books Below Creation Area - 3x16 Grid */}
               <section className="mb-12">
                 <div className="text-center mb-8">
@@ -514,7 +502,11 @@ export default function App() {
                 </div>
                 
                 <div className="grid grid-cols-3 gap-4">
-                  {popularBooks.slice(0, 48).map((book) => (
+                  {/* Dragon Book - First Position */}
+                  <BookPreview book={dragonBook} />
+                  
+                  {/* Existing Books */}
+                  {popularBooks.slice(0, 47).map((book) => (
                     <div key={book.id} className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-purple-200">
                       <div className={`${book.color} rounded-lg p-6 text-center mb-3`}>
                         <div className="text-4xl mb-2">{book.image}</div>
@@ -540,18 +532,12 @@ export default function App() {
                 <p className="text-xl text-gray-600">Choose from our most loved themes or create your own custom book above!</p>
               </div>
               
-              {/* Featured Dragon Book */}
-              <div className="text-center mb-12">
-                <h3 className="text-3xl font-bold text-gray-800 mb-4">Featured Book</h3>
-                <p className="text-lg text-gray-600">Check out our latest AI-generated coloring book!</p>
-              </div>
-              
-              <div className="max-w-2xl mx-auto mb-12">
-                <BookPreview book={dragonBook} />
-              </div>
-              
               <div className="grid grid-cols-3 gap-4">
-                {popularBooks.slice(0, 48).map((book) => (
+                {/* Dragon Book - First Position */}
+                <BookPreview book={dragonBook} />
+                
+                {/* Existing Books */}
+                {popularBooks.slice(0, 47).map((book) => (
                   <div key={book.id} className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-purple-200">
                     <div className={`${book.color} rounded-lg p-6 text-center mb-3`}>
                       <div className="text-4xl mb-2">{book.image}</div>
