@@ -28,10 +28,10 @@ const dragonBook = {
   category: "fantasy",
   prompt: "a friendly dragon helping kids build a treehouse",
   images: [
-    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756501545863-bixvotrn1.png",
-    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756501551716-j4li3t2yz.png",
-    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756501557630-rufgpdahw.png",
-    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756501563009-jl1zr4m1i.png"
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756503621605-dssz16cx5.png",
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756503627447-n7w5pnukr.png",
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756503633825-qvt9kn7p2.png",
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756503639457-4zb0xwouu.png"
   ]
 }
 
@@ -247,6 +247,9 @@ export default function App() {
   const handleBookSelect = (book) => {
     setSelectedBook(book)
     setActiveTab('create') // Show the create section with the selected book
+    
+    // Scroll to top to show the selected book
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleBookBack = () => {
