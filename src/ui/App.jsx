@@ -167,6 +167,61 @@ export default function App() {
   const [cartBusy, setCartBusy] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
 
+  // Load cart from cookies on app start
+  useEffect(() => {
+    const savedCart = getCartFromCookies()
+    if (savedCart && savedCart.length > 0) {
+      setCartItems(savedCart)
+      setIsCartOpen(true) // Auto-open cart if items exist
+    }
+  }, [])
+
+  // Save cart to cookies whenever cartItems changes
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      saveCartToCookies(cartItems)
+    } else {
+      clearCartCookies()
+    }
+  }, [cartItems])
+
+  // Auto-open cart when items are added
+  useEffect(() => {
+    if (cartItems.length > 0 && !isCartOpen) {
+      setIsCartOpen(true)
+    }
+  }, [cartItems.length, isCartOpen])
+
+  const getCartFromCookies = () => {
+    try {
+      const cartCookie = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('colorbook_cart='))
+      
+      if (cartCookie) {
+        const cartData = cartCookie.split('=')[1]
+        return JSON.parse(decodeURIComponent(cartData))
+      }
+    } catch (error) {
+      console.error('Error loading cart from cookies:', error)
+    }
+    return []
+  }
+
+  const saveCartToCookies = (items) => {
+    try {
+      const cartData = JSON.stringify(items)
+      const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+      document.cookie = `colorbook_cart=${encodeURIComponent(cartData)}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`
+    } catch (error) {
+      console.error('Error saving cart to cookies:', error)
+    }
+  }
+
+  const clearCartCookies = () => {
+    document.cookie = 'colorbook_cart=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+  }
+
   
   React.useEffect(() => {
     track('page_viewed', { 
@@ -302,8 +357,7 @@ export default function App() {
       // Show success message
       setErr(null)
       
-      // Open cart sidebar
-      setIsCartOpen(true)
+      // Cart will auto-open via useEffect
       
       // Track the add to cart event
       track('book_added_to_cart', {
@@ -322,6 +376,10 @@ export default function App() {
 
   const handleRemoveFromCart = (index) => {
     setCartItems(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handleUpdateCartItems = (newItems) => {
+    setCartItems(newItems)
   }
 
   const handleCartCheckout = async () => {
@@ -693,6 +751,7 @@ export default function App() {
           onCheckout={handleCartCheckout}
           isOpen={isCartOpen}
           onClose={() => setIsCartOpen(false)}
+          onUpdateCartItems={handleUpdateCartItems}
         />
 
         {/* Checkout Flow */}
@@ -708,6 +767,7 @@ export default function App() {
               setSelected(null)
               setCycles([])
               setCartItems([])
+              setIsCartOpen(false)
               setPrompt('a car being chased by dinosaurs!')
             }}
           />
