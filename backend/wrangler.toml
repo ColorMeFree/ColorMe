@@ -22,14 +22,12 @@ SHOPIFY_VARIANT_GID = "gid://shopify/ProductVariant/50288087105826"
 # - LULU_CLIENT_SECRET
 
 # KV namespace for storing design and customer data
-# TODO: Create KV namespace and add proper IDs
-# [[kv_namespaces]]
-# binding = "COLORBOOK_KV"
-# id = "your-kv-namespace-id"
-# preview_id = "your-preview-kv-namespace-id"
+[[kv_namespaces]]
+binding = "COLORBOOK_KV"
+id = "f07df84cd5a5418e8c7f4fc0dd527011"
+preview_id = "9ba8d789785b427f9c956e057aed0ffc"
 
 # R2 bucket for image storage
-# TODO: Create R2 bucket and add proper configuration
-# [[r2_buckets]]
-# binding = "COLORBOOK_R2"
-# bucket_name = "colorbook-images"
+[[r2_buckets]]
+binding = "COLORBOOK_R2"
+bucket_name = "colorbook-images"

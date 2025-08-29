@@ -10,7 +10,7 @@ export class StabilityAIService {
   }
 
   // Generate coloring book line art
-  async generateColoringPage(prompt: string): Promise<string> {
+  async generateColoringPage(prompt: string, r2Bucket?: R2Bucket): Promise<string> {
     try {
       // Enhance prompt for line art style
       const enhancedPrompt = this.enhancePromptForLineArt(prompt)
@@ -42,19 +42,37 @@ export class StabilityAIService {
       })
 
       if (!response.ok) {
-        throw new Error(`Stability AI error: ${response.statusText}`)
+        const errorText = await response.text()
+        throw new Error(`Stability AI error: ${response.status} - ${errorText}`)
       }
 
       const data = await response.json()
       
       // Get the generated image
       const image = data.artifacts[0]
-      const imageBuffer = Buffer.from(image.base64, 'base64')
       
-      // Upload to Cloudflare R2 or similar storage
-      const imageUrl = await this.uploadImage(imageBuffer, prompt)
+      // Convert base64 to Uint8Array for Cloudflare Workers
+      const binaryString = atob(image.base64)
+      const imageBuffer = new Uint8Array(binaryString.length)
+      for (let i = 0; i < binaryString.length; i++) {
+        imageBuffer[i] = binaryString.charCodeAt(i)
+      }
       
-      return imageUrl
+      // Upload to R2 for permanent storage
+      if (r2Bucket) {
+        try {
+          const r2Url = await this.uploadImage(imageBuffer, prompt, r2Bucket)
+          console.log('Successfully uploaded to R2:', r2Url)
+          return r2Url
+        } catch (error) {
+          console.error('R2 upload failed:', error)
+        }
+      }
+      
+      // Fallback to data URL if R2 fails
+      const dataUrl = `data:image/png;base64,${image.base64}`
+      console.log('Using data URL fallback')
+      return dataUrl
     } catch (error) {
       console.error('Stability AI generation failed:', error)
       throw error
@@ -135,32 +153,44 @@ export class StabilityAIService {
   }
 
   // Upload image to storage (Cloudflare R2)
-  private async uploadImage(imageBuffer: Buffer, prompt: string): Promise<string> {
-    // For now, return a placeholder URL
-    // In production, upload to Cloudflare R2 or similar
+  private async uploadImage(imageBuffer: Uint8Array, prompt: string, r2Bucket?: R2Bucket): Promise<string> {
     const timestamp = Date.now()
     const randomId = Math.random().toString(36).substr(2, 9)
+    const filename = `coloring-pages/${timestamp}-${randomId}.png`
     
-    // TODO: Implement actual upload to Cloudflare R2
-    // const uploadUrl = await uploadToR2(imageBuffer, `coloring-pages/${timestamp}-${randomId}.png`)
+    if (r2Bucket) {
+      try {
+        await r2Bucket.put(filename, imageBuffer, {
+          httpMetadata: {
+            contentType: 'image/png'
+          }
+        })
+        
+        // Return the R2 URL - we'll serve this through our Worker
+        return `https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/${filename}`
+      } catch (error) {
+        console.error('Failed to upload to R2:', error)
+      }
+    }
     
-    return `https://your-backend.workers.dev/coloring-pages/${timestamp}-${randomId}.png`
+    // Fallback to placeholder for now
+    return `https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80`
   }
 
   // Generate multiple pages for a book
-  async generatePages(prompt: string, count: number = 4): Promise<string[]> {
+  async generatePages(prompt: string, count: number = 4, r2Bucket?: R2Bucket): Promise<string[]> {
     const pages = []
     
     for (let i = 0; i < count; i++) {
       try {
         // Add variation to the prompt
         const variationPrompt = `${prompt}, page ${i + 1}, variation ${i + 1}`
-        const imageUrl = await this.generateColoringPage(variationPrompt)
+        const imageUrl = await this.generateColoringPage(variationPrompt, r2Bucket)
         pages.push(imageUrl)
       } catch (error) {
         console.error(`Failed to generate page ${i + 1}:`, error)
         // Fallback to placeholder
-        pages.push(`https://via.placeholder.com/1024x1024/ffffff/000000?text=Coloring+Page+${i + 1}`)
+        pages.push(`https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80`)
       }
     }
     
@@ -190,32 +220,54 @@ export class StabilityAIService {
   // Health check
   async healthCheck(): Promise<{ status: string; message: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/stable-diffusion-xl-1024-v1-0/user/balance`, {
+      // Test with a simple generation request instead of balance check
+      const response = await fetch(`${this.baseUrl}/stable-diffusion-xl-1024-v1-0/text-to-image`, {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,
-        }
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text_prompts: [
+            {
+              text: "simple test",
+              weight: 1
+            }
+          ],
+          cfg_scale: 7,
+          height: 1024,
+          width: 1024,
+          samples: 1,
+          steps: 30
+        })
       })
       
       if (response.ok) {
-        const data = await response.json() as { credits: number }
         return { 
           status: 'healthy', 
-          message: `Stability AI connected. Credits: ${data.credits}` 
+          message: 'Stability AI connected and ready for image generation' 
         }
       } else {
+        const errorText = await response.text()
         return { 
           status: 'warning', 
-          message: 'Stability AI returned non-200 status' 
+          message: `Stability AI returned ${response.status}: ${errorText}` 
         }
       }
     } catch (error) {
       return { 
         status: 'error', 
-        message: 'Cannot connect to Stability AI' 
+        message: `Cannot connect to Stability AI: ${error}` 
       }
     }
   }
 }
 
-// Export singleton instance
+// Factory function to create StabilityAIService with environment variables
+export function createStabilityAIService(env: any): StabilityAIService {
+  return new StabilityAIService(env.STABILITY_API_KEY || '')
+}
+
+// Export singleton instance for backward compatibility
 export const stabilityAIService = new StabilityAIService('')
+

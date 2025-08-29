@@ -3,6 +3,7 @@ import { CONFIG } from '../config'
 import { createCart, addCustomBookToCart } from '../lib/shopify'
 import { track } from '../lib/analytics'
 import CheckoutFlow from './CheckoutFlow'
+import BookPreview from './BookPreview'
 
 const enhancers = [
   'make it silly', 'underwater world', 'add friendly animals',
@@ -17,6 +18,20 @@ const expandedSuggestions = {
   'add a castle': ['with knights', 'and princesses', 'with dragons', 'and magic spells', 'with a moat'],
   'outer space': ['with planets', 'and aliens', 'in a spaceship', 'with stars everywhere', 'and rocket ships'],
   'sports theme': ['playing soccer', 'basketball game', 'swimming race', 'baseball match', 'tennis tournament']
+}
+
+// Generated dragon book with real images
+const dragonBook = {
+  id: 0,
+  title: "Dragon & Treehouse Adventure",
+  category: "fantasy",
+  prompt: "a friendly dragon helping kids build a treehouse",
+  images: [
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756501545863-bixvotrn1.png",
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756501551716-j4li3t2yz.png",
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756501557630-rufgpdahw.png",
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756501563009-jl1zr4m1i.png"
+  ]
 }
 
 // Popular coloring book categories with sample images (child-friendly)
@@ -479,6 +494,18 @@ export default function App() {
           </section>
         )}
 
+              {/* Featured Dragon Book */}
+              <section className="mb-12">
+                <div className="text-center mb-8">
+                  <h3 className="text-3xl font-bold text-gray-800 mb-4">Featured Book</h3>
+                  <p className="text-lg text-gray-600">Check out our latest AI-generated coloring book!</p>
+                </div>
+                
+                <div className="max-w-2xl mx-auto">
+                  <BookPreview book={dragonBook} />
+                </div>
+              </section>
+
               {/* Popular Books Below Creation Area - 3x16 Grid */}
               <section className="mb-12">
                 <div className="text-center mb-8">
@@ -511,6 +538,16 @@ export default function App() {
               <div className="text-center mb-12">
                 <h2 className="text-4xl font-bold text-gray-800 mb-4">Popular Coloring Books</h2>
                 <p className="text-xl text-gray-600">Choose from our most loved themes or create your own custom book above!</p>
+              </div>
+              
+              {/* Featured Dragon Book */}
+              <div className="text-center mb-12">
+                <h3 className="text-3xl font-bold text-gray-800 mb-4">Featured Book</h3>
+                <p className="text-lg text-gray-600">Check out our latest AI-generated coloring book!</p>
+              </div>
+              
+              <div className="max-w-2xl mx-auto mb-12">
+                <BookPreview book={dragonBook} />
               </div>
               
               <div className="grid grid-cols-3 gap-4">
