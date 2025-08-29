@@ -626,3 +626,8 @@
  TAB ...................................... Complete filename & cycle.
  SHIFT-TAB ...................... ESC-TAB   Complete filename & reverse cycle.
  ctrl-L ................................... Complete filename, list all.
+[33mb13d6c4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Add dragon book with real AI-generated images to homepage
+[33md0c93d8[m Complete secure configuration and Shopify integration - All secrets protected in Cloudflare
+[33m8ee08c2[m Fix GitHub Actions: Add environment variables for secure build
+[33m4bc7ceb[m Add secure production build script - no secrets exposed
+[33m2e9ffd3[m Fix GitHub Pages environment variables - add secrets setup guide

@@ -1,20 +1,15 @@
 import React from 'react'
 
-const BookPreview = ({ book }) => {
-  const { title, images, prompt, category } = book
+const BookPreview = ({ book, onClick }) => {
+  const { title, images } = book
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-      <div className="p-4">
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">{title}</h3>
-        <p className="text-sm text-gray-600 mb-3">{prompt}</p>
-        <span className="inline-block bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full mb-3">
-          {category}
-        </span>
-      </div>
-      
-      <div className="grid grid-cols-2 gap-2 p-4 pt-0">
-        {images && images.map((image, index) => (
+    <div 
+      className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-purple-200 cursor-pointer"
+      onClick={onClick}
+    >
+      <div className="grid grid-cols-3 gap-2 mb-3">
+        {images && images.slice(0, 3).map((image, index) => (
           <div key={index} className="aspect-square overflow-hidden rounded-lg">
             <img 
               src={image} 
@@ -27,12 +22,7 @@ const BookPreview = ({ book }) => {
           </div>
         ))}
       </div>
-      
-      <div className="p-4 pt-0">
-        <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200">
-          Create Your Own
-        </button>
-      </div>
+      <h4 className="text-sm font-bold text-gray-800 text-center">{title}</h4>
     </div>
   )
 }
