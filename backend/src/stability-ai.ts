@@ -12,7 +12,7 @@ export class StabilityAIService {
   // Generate coloring book line art
   async generateColoringPage(prompt: string, r2Bucket?: R2Bucket): Promise<string> {
     try {
-      // Enhance prompt for line art style
+      // Enhanced prompt with quality requirements
       const enhancedPrompt = this.enhancePromptForLineArt(prompt)
       
       const response = await fetch(`${this.baseUrl}/stable-diffusion-xl-1024-v1-0/text-to-image`, {
@@ -28,15 +28,19 @@ export class StabilityAIService {
               weight: 1
             },
             {
-              text: "coloring book, line art, black and white, simple, clean outlines, no shading, suitable for children",
-              weight: 0.8
+              text: "coloring book style, thick black outlines, clean line art, simple design, no shading, no gradients, no text, no numbers, no letters, child-friendly, clear separation between elements, balanced composition",
+              weight: 1.2
+            },
+            {
+              text: "deformed, blurry, low quality, text, numbers, letters, overlapping, messy, complex, realistic, photographic, 3d, cgi",
+              weight: -1.0
             }
           ],
-          cfg_scale: 7,
+          cfg_scale: 8,
           height: 1024,
           width: 1024,
           samples: 1,
-          steps: 30,
+          steps: 40,
           style_preset: "line-art"
         })
       })

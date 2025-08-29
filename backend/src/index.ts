@@ -6,6 +6,7 @@ import { StabilityAIService } from './stability-ai'
 import { shopifyWebhookHandler } from './shopify-webhooks'
 import { createStorageService } from './storage'
 import { enhancedPromptExpansionService } from './enhanced-prompt-expansion'
+import { advancedPromptAnalysisService } from './advanced-prompt-analysis'
 import { contentFilterService } from './content-filter'
 import { createStabilityAIService } from './stability-ai'
 
@@ -54,20 +55,30 @@ app.post('/generate-previews', async (c) => {
     const sanitizedPrompt = contentFilterService.sanitizePrompt(prompt)
     console.log('Sanitized prompt:', sanitizedPrompt)
     
-    // Step 3: Expand prompt into 30 scenes
-    const expandedScenes = enhancedPromptExpansionService.expandPrompt(sanitizedPrompt)
-    console.log('Generated 30 expanded scenes')
+    // Step 3: Advanced prompt analysis and scene generation
+    console.log('Performing advanced prompt analysis...')
+    const analysis = await advancedPromptAnalysisService.analyzePrompt(sanitizedPrompt)
+    console.log('Analysis completed:', {
+      mainElements: analysis.mainElements,
+      characters: analysis.characters,
+      actions: analysis.actions,
+      objects: analysis.objects
+    })
     
-    // Step 4: Validate all scenes are appropriate
+    // Step 4: Get expanded scenes from analysis
+    const expandedScenes = analysis.expandedScenes.map(scene => scene.prompt)
+    console.log('Generated 30 advanced scenes')
+    
+    // Step 5: Validate all scenes are appropriate
     const sceneValidation = contentFilterService.validateScenes(expandedScenes)
     if (!sceneValidation.isValid) {
       console.warn('Some generated scenes were inappropriate:', sceneValidation.invalidScenes)
       // Regenerate scenes if needed
-      const regeneratedScenes = enhancedPromptExpansionService.expandPrompt(sanitizedPrompt)
-      expandedScenes.splice(0, expandedScenes.length, ...regeneratedScenes)
+      const regeneratedAnalysis = await advancedPromptAnalysisService.analyzePrompt(sanitizedPrompt)
+      expandedScenes.splice(0, expandedScenes.length, ...regeneratedAnalysis.expandedScenes.map(scene => scene.prompt))
     }
     
-    // Step 5: Get first 4 scenes for preview
+    // Step 6: Get first 4 scenes for preview
     const previewScenes = expandedScenes.slice(0, 4)
     
     // Step 6: Generate 4 preview images using Stability AI
@@ -83,13 +94,19 @@ app.post('/generate-previews', async (c) => {
       console.log('Prompt:', sanitizedPrompt)
       console.log('R2 bucket available:', !!c.env.COLORBOOK_R2)
       
-      // Test with just one image first
-      console.log('Testing single image generation...')
-      const testImage = await stabilityService.generateColoringPage(sanitizedPrompt, c.env.COLORBOOK_R2)
-      console.log('Single image generated:', testImage.substring(0, 100) + '...')
+      // Generate 4 preview images using enhanced prompts
+      console.log('Generating 4 preview images with enhanced prompts...')
+      images = []
       
-      // If single image works, generate all 4
-      images = await stabilityService.generatePages(sanitizedPrompt, 4, c.env.COLORBOOK_R2)
+      for (let i = 0; i < 4; i++) {
+        const enhancedPrompt = previewScenes[i]
+        console.log(`Generating image ${i + 1} with prompt:`, enhancedPrompt)
+        
+        const image = await stabilityService.generateColoringPage(enhancedPrompt, c.env.COLORBOOK_R2)
+        images.push(image)
+        
+        console.log(`Image ${i + 1} generated successfully`)
+      }
       console.log('Successfully generated', images.length, 'coloring book images')
       console.log('First image URL:', images[0]?.substring(0, 100) + '...')
     } catch (error) {
