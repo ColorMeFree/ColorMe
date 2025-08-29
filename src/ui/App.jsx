@@ -55,10 +55,10 @@ const dinosaurTimeTravelBook = {
   category: "adventure",
   prompt: "dinosaurs discovering modern technology and time travel",
   images: [
-    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756506602682-sg4sd2mld.png",
-    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756506609816-75dcdlu20.png",
-    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756506615842-n02ivumpp.png",
-    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756506621551-zzyz8tl0d.png"
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756509090979-zev4m60zr.png",
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756509097511-3aq8n8vxl.png",
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756509103527-gakxy4csi.png",
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756509108663-10ahbpx2n.png"
   ]
 }
 
