@@ -338,9 +338,7 @@ export default function App() {
         await addCustomBookToCart(cart.id, item.id, item.prompt)
       }
       
-      // Clear cart and show checkout
-      setCartItems([])
-      setIsCartOpen(false)
+      // Keep cart open and show checkout
       setShowCheckout(true)
       
     } catch (error) {
@@ -415,7 +413,7 @@ export default function App() {
                 </button>
                 <button 
                   onClick={() => setIsCartOpen(true)}
-                  className="relative px-4 py-2 rounded-full font-medium bg-green-500 text-white hover:bg-green-600 transition-all"
+                  className="relative px-4 py-2 rounded-full font-medium bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-lg transition-all"
                 >
                   🛒 Cart ({cartItems.length})
                 </button>
@@ -702,11 +700,14 @@ export default function App() {
           <CheckoutFlow
             selected={selected}
             prompt={prompt}
+            cartItems={cartItems}
+            onClearCart={() => setCartItems([])}
             onClose={() => setShowCheckout(false)}
             onComplete={() => {
               setShowCheckout(false)
               setSelected(null)
               setCycles([])
+              setCartItems([])
               setPrompt('a car being chased by dinosaurs!')
             }}
           />
