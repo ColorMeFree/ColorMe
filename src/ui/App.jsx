@@ -49,6 +49,19 @@ const atlantisBook = {
   ]
 }
 
+const dinosaurTimeTravelBook = {
+  id: 2,
+  title: "Dinosaur Time Travel Adventure",
+  category: "adventure",
+  prompt: "dinosaurs discovering modern technology and time travel",
+  images: [
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756506602682-sg4sd2mld.png",
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756506609816-75dcdlu20.png",
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756506615842-n02ivumpp.png",
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756506621551-zzyz8tl0d.png"
+  ]
+}
+
 // Popular coloring book categories with sample images (child-friendly)
 const popularBooks = [
   { id: 1, title: "Dinosaur Adventure", category: "dinosaurs", image: "🦖", color: "bg-green-100" },
@@ -702,6 +715,9 @@ export default function App() {
                   {/* Atlantis Book - Second Position */}
                   <BookPreview book={atlantisBook} onClick={() => handleBookSelect(atlantisBook)} />
                   
+                  {/* Dinosaur Time Travel Book - New Position */}
+                  <BookPreview book={dinosaurTimeTravelBook} onClick={() => handleBookSelect(dinosaurTimeTravelBook)} />
+                  
                   {/* Existing Books */}
                   {popularBooks.slice(0, 46).map((book) => (
                     <div key={book.id} className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-purple-200 cursor-pointer" onClick={() => handleBookSelect(book)}>
@@ -735,6 +751,9 @@ export default function App() {
                 
                 {/* Atlantis Book - Second Position */}
                 <BookPreview book={atlantisBook} onClick={() => handleBookSelect(atlantisBook)} />
+                
+                {/* Dinosaur Time Travel Book - New Position */}
+                <BookPreview book={dinosaurTimeTravelBook} onClick={() => handleBookSelect(dinosaurTimeTravelBook)} />
                 
                 {/* Existing Books */}
                 {popularBooks.slice(0, 46).map((book) => (
