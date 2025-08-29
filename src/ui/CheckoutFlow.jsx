@@ -19,7 +19,7 @@ const popularUpsellBooks = [
   { id: 12, title: "Construction Site", image: "🚧", price: 19.99, originalPrice: 24.99 }
 ]
 
-export default function CheckoutFlow({ selected, prompt, onClose, onComplete }) {
+export default function CheckoutFlow({ selected, prompt, onClose, onComplete, cartItems, onClearCart }) {
   const [step, setStep] = useState('checkout') // checkout, processing, success, upsell
   const [cart, setCart] = useState(null)
   const [checkoutUrl, setCheckoutUrl] = useState('')
@@ -31,31 +31,30 @@ export default function CheckoutFlow({ selected, prompt, onClose, onComplete }) 
 
   // Initialize checkout
   useEffect(() => {
-    if (selected && step === 'checkout') {
+    if (cartItems && cartItems.length > 0 && step === 'checkout') {
       initializeCheckout()
     }
-  }, [selected, step])
+  }, [cartItems, step])
 
   const initializeCheckout = async () => {
     setIsLoading(true)
     setError(null)
     
     try {
-      // Create cart with custom book
+      // Create cart with all items
       const newCart = await createCart()
-      const cartWithBook = await addCustomBookToCart(newCart.id, {
-        designId: selected.id,
-        prompt: prompt,
-        variantGID: CONFIG.CUSTOM_BOOK_VARIANT_GID
-      })
       
-      setCart(cartWithBook)
-      setCheckoutUrl(cartWithBook.checkoutUrl)
+      // Add all cart items to Shopify cart
+      for (const item of cartItems) {
+        await addCustomBookToCart(newCart.id, item.id, item.prompt)
+      }
+      
+      setCart(newCart)
+      setCheckoutUrl(newCart.checkoutUrl)
       
       track('checkout_initialized', { 
-        designId: selected.id,
-        prompt: prompt,
-        cartId: cartWithBook.id
+        cartItems: cartItems.length,
+        cartId: newCart.id
       })
       
     } catch (error) {
