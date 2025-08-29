@@ -28,7 +28,7 @@ const BookDetail = ({ book, onAddToCart, onBack }) => {
       <div className="flex gap-4 justify-center">
         <button 
           onClick={onAddToCart}
-          className="px-8 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold hover:shadow-lg transition-all"
+          className="px-8 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold hover:shadow-lg transition-all disabled:opacity-50"
         >
           Add to Cart
         </button>
