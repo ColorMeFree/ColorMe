@@ -4,6 +4,10 @@ import { luluService, createLuluService } from './lulu'
 import { shopifyService, createShopifyService } from './shopify'
 import { StabilityAIService } from './stability-ai'
 import { shopifyWebhookHandler } from './shopify-webhooks'
+import { createStorageService } from './storage'
+import { enhancedPromptExpansionService } from './enhanced-prompt-expansion'
+import { contentFilterService } from './content-filter'
+import { createStabilityAIService } from './stability-ai'
 
 const app = new Hono()
 app.use('*', cors())
@@ -38,18 +42,85 @@ app.post('/generate-previews', async (c) => {
   try {
     console.log('Received prompt for preview generation:', prompt)
     
-    // Use actual images for now (Stability AI disabled)
+    // Step 1: Content filtering
+    const filterResult = contentFilterService.filterPrompt(prompt)
+    if (!filterResult.isValid) {
+      return c.json({ 
+        error: filterResult.reason || 'Content not appropriate for children\'s books' 
+      }, 400)
+    }
+    
+    // Step 2: Sanitize prompt if needed
+    const sanitizedPrompt = contentFilterService.sanitizePrompt(prompt)
+    console.log('Sanitized prompt:', sanitizedPrompt)
+    
+    // Step 3: Expand prompt into 30 scenes
+    const expandedScenes = enhancedPromptExpansionService.expandPrompt(sanitizedPrompt)
+    console.log('Generated 30 expanded scenes')
+    
+    // Step 4: Validate all scenes are appropriate
+    const sceneValidation = contentFilterService.validateScenes(expandedScenes)
+    if (!sceneValidation.isValid) {
+      console.warn('Some generated scenes were inappropriate:', sceneValidation.invalidScenes)
+      // Regenerate scenes if needed
+      const regeneratedScenes = enhancedPromptExpansionService.expandPrompt(sanitizedPrompt)
+      expandedScenes.splice(0, expandedScenes.length, ...regeneratedScenes)
+    }
+    
+    // Step 5: Get first 4 scenes for preview
+    const previewScenes = expandedScenes.slice(0, 4)
+    
+    // Step 6: Generate 4 preview images using Stability AI
     const sessionId = crypto.randomUUID()
-    const images = [
-      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80',
-      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80',
-      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80',
-      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80'
-    ]
     
-    console.log('Generated placeholder preview images:', images)
+    // Create Stability AI service
+    const stabilityService = createStabilityAIService(c.env)
     
-    return c.json({ sessionId, images })
+    // Generate real coloring book images
+    let images: string[]
+    try {
+      console.log('Generating real coloring book images with Stability AI...')
+      console.log('Prompt:', sanitizedPrompt)
+      console.log('R2 bucket available:', !!c.env.COLORBOOK_R2)
+      
+      // Test with just one image first
+      console.log('Testing single image generation...')
+      const testImage = await stabilityService.generateColoringPage(sanitizedPrompt, c.env.COLORBOOK_R2)
+      console.log('Single image generated:', testImage.substring(0, 100) + '...')
+      
+      // If single image works, generate all 4
+      images = await stabilityService.generatePages(sanitizedPrompt, 4, c.env.COLORBOOK_R2)
+      console.log('Successfully generated', images.length, 'coloring book images')
+      console.log('First image URL:', images[0]?.substring(0, 100) + '...')
+    } catch (error) {
+      console.error('Stability AI generation failed, using fallback images:', error)
+      console.error('Error details:', error.message)
+      console.error('Error stack:', error.stack)
+      images = [
+        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80',
+        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80',
+        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80',
+        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80'
+      ]
+    }
+    
+    // Step 7: Store prompt and expanded scenes
+    const storageService = createStorageService(c.env)
+    const promptId = await storageService.storePrompt(sanitizedPrompt, expandedScenes, images)
+    
+    console.log('Stored prompt with ID:', promptId)
+    console.log('Generated preview scenes:', previewScenes)
+    
+    return c.json({ 
+      sessionId, 
+      images,
+      promptId,
+      previewScenes,
+      originalPrompt: prompt,
+      sanitizedPrompt: sanitizedPrompt,
+      totalScenes: expandedScenes.length,
+      filterWarning: filterResult.reason
+    })
   } catch (error) {
     console.error('Failed to generate previews:', error)
     return c.json({ error: 'Failed to generate previews' }, 500)
@@ -57,20 +128,24 @@ app.post('/generate-previews', async (c) => {
 })
 
 app.post('/lock-design', async (c) => {
-  const { sessionId, chosen, prompt } = await c.req.json()
+  const { sessionId, chosen, prompt, promptId } = await c.req.json()
   
-  // Store design metadata (in production, use Cloudflare KV)
-  const designId = crypto.randomUUID()
-  const styleSeed = crypto.randomUUID() // For consistent style across remaining pages
-  
-  // In production, store in KV:
-  // await c.env.COLORBOOK_KV.put(`design:${designId}`, JSON.stringify({
-  //   sessionId, chosen, prompt, styleSeed, createdAt: Date.now()
-  // }))
-  
-  console.log('Design locked:', { designId, styleSeed, prompt })
-  
-  return c.json({ designId, styleSeed })
+  try {
+    // Store chosen images for this prompt
+    const storageService = createStorageService(c.env)
+    await storageService.updateChosenImages(promptId, chosen)
+    
+    // Generate design ID
+    const designId = crypto.randomUUID()
+    const styleSeed = crypto.randomUUID() // For consistent style across remaining pages
+    
+    console.log('Design locked:', { designId, styleSeed, prompt, promptId })
+    
+    return c.json({ designId, styleSeed, promptId })
+  } catch (error) {
+    console.error('Failed to lock design:', error)
+    return c.json({ error: 'Failed to lock design' }, 500)
+  }
 })
 
 app.post('/order-paid', async (c) => {
@@ -100,17 +175,26 @@ app.post('/order-paid', async (c) => {
       try {
         console.log('Processing custom book order:', bookOrder)
         
+        // Get stored prompt data
+        const storageService = createStorageService(c.env)
+        const storedPrompt = await storageService.getPromptForOrder(bookOrder.designId)
+        
+        if (!storedPrompt) {
+          throw new Error('Stored prompt not found')
+        }
+        
         // Generate remaining 26 pages using actual images (Stability AI disabled)
         const remainingPages = Array.from({ length: 26 }, (_, i) => 
           `https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80`
         )
         
-        // TODO: Assemble 30-page PDF (4 chosen + 26 generated)
-        // For now, combine placeholder pages
+        // Combine chosen images with remaining pages
         const allPages = [
-          // TODO: Get the 4 chosen pages from storage
-          ...remainingPages
+          ...storedPrompt.chosenImages, // 4 chosen images
+          ...remainingPages // 26 remaining pages
         ]
+        
+        console.log('Generated full book with scenes:', storedPrompt.expandedScenes)
         
         // Submit to Lulu for printing
         const printJob = await luluService.createPrintJob({
@@ -168,6 +252,27 @@ app.get('/config', async (c) => {
   })
 })
 
+// Serve images from R2
+app.get('/images/*', async (c) => {
+  try {
+    const path = c.req.path.replace('/images/', '')
+    const object = await c.env.COLORBOOK_R2.get(path)
+    
+    if (!object) {
+      return c.json({ error: 'Image not found' }, 404)
+    }
+    
+    const headers = new Headers()
+    headers.set('Content-Type', object.httpMetadata?.contentType || 'image/png')
+    headers.set('Cache-Control', 'public, max-age=31536000') // Cache for 1 year
+    
+    return new Response(object.body, { headers })
+  } catch (error) {
+    console.error('Failed to serve image:', error)
+    return c.json({ error: 'Failed to serve image' }, 500)
+  }
+})
+
 // Secure Shopify product management endpoint
 app.get('/shopify/product/:productId', async (c) => {
   const productId = c.req.param('productId')
@@ -222,6 +327,30 @@ app.get('/stability-ai/health', async (c) => {
     return c.json(health)
   } catch (error) {
     return c.json({ status: 'error', message: 'Health check failed' }, 500)
+  }
+})
+
+// Test Stability AI image generation
+app.post('/stability-ai/test', async (c) => {
+  try {
+    const { prompt } = await c.req.json()
+    const stabilityService = createStabilityAIService(c.env)
+    
+    console.log('Testing Stability AI with prompt:', prompt)
+    const imageUrl = await stabilityService.generateColoringPage(prompt, c.env.COLORBOOK_R2)
+    
+    return c.json({ 
+      success: true, 
+      imageUrl: imageUrl.substring(0, 100) + '...',
+      fullUrl: imageUrl
+    })
+  } catch (error) {
+    console.error('Stability AI test failed:', error)
+    return c.json({ 
+      success: false, 
+      error: error.message,
+      stack: error.stack
+    }, 500)
   }
 })
 
