@@ -4,6 +4,17 @@
 
 ColorMeFree is a web application that lets parents create personalized 30-page coloring books for their children using AI-generated content. Simply type any idea, see 4 preview pages instantly, and get a complete custom coloring book delivered to your door.
 
+## ⚠️ Security Notice
+
+**IMPORTANT: Always protect your APIs and secrets!**
+
+- Never commit API keys, secrets, or sensitive configuration to version control
+- Use environment variables and secure secret management systems
+- Keep your `.env` files, `config.secret`, and other sensitive files out of git
+- Follow security best practices for all integrations (Shopify, Lulu, etc.)
+
+See the [Configuration](#-configuration) section for proper setup instructions.
+
 <!-- Deployment triggered: 2024-12-19 -->
 <!-- Second deployment trigger -->
 
