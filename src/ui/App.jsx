@@ -21,7 +21,7 @@ const expandedSuggestions = {
   'sports theme': ['playing soccer', 'basketball game', 'swimming race', 'baseball match', 'tennis tournament']
 }
 
-// Generated dragon book with real images
+// Generated books with real images
 const dragonBook = {
   id: 0,
   title: "Dragon & Treehouse Adventure",
@@ -32,6 +32,19 @@ const dragonBook = {
     "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756503627447-n7w5pnukr.png",
     "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756503633825-qvt9kn7p2.png",
     "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756503639457-4zb0xwouu.png"
+  ]
+}
+
+const atlantisBook = {
+  id: 1,
+  title: "City of Atlantis",
+  category: "fantasy",
+  prompt: "underwater city castle atlantis",
+  images: [
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756504048134-y59q449ss.png",
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756504054997-k585nc6nk.png",
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756504061487-54be39ql6.png",
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756504068548-pcbwlqtcm.png"
   ]
 }
 
@@ -248,8 +261,16 @@ export default function App() {
     setSelectedBook(book)
     setActiveTab('create') // Show the create section with the selected book
     
-    // Scroll to top to show the selected book
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    // Scroll to the selected book section (after the hero section)
+    setTimeout(() => {
+      const selectedBookElement = document.querySelector('[data-selected-book]')
+      if (selectedBookElement) {
+        selectedBookElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      } else {
+        // Fallback to scrolling to top
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    }, 100) // Small delay to ensure the book is rendered
   }
 
   const handleBookBack = () => {
@@ -426,7 +447,7 @@ export default function App() {
 
               {/* Selected Book Display */}
               {selectedBook && (
-                <section className="mb-12">
+                <section className="mb-12" data-selected-book>
                   <BookDetail 
                     book={selectedBook}
                     onAddToCart={handleBookAddToCart}
@@ -447,11 +468,17 @@ export default function App() {
                         </div>
                       ))}
                       <div className="relative border-2 border-purple-200 rounded-xl overflow-hidden flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100">
-                        <div className="text-center p-4">
+                        {/* Blurry background image */}
+                        <img 
+                          src={cycles[cycles.length-1]?.images[2] || 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80'} 
+                          alt="" 
+                          className="absolute inset-0 w-full h-full object-cover opacity-10 blur-xl scale-110"
+                        />
+                        <div className="text-center p-4 relative z-10">
                           <div className="text-2xl font-bold text-purple-600">25+ MORE pages</div>
                           <div className="text-sm text-purple-500">in the same style</div>
-                </div>
-              </div>
+                        </div>
+                      </div>
             </div>
                     <div className="flex gap-4">
                       <button 
@@ -550,8 +577,11 @@ export default function App() {
                   {/* Dragon Book - First Position */}
                   <BookPreview book={dragonBook} onClick={() => handleBookSelect(dragonBook)} />
                   
+                  {/* Atlantis Book - Second Position */}
+                  <BookPreview book={atlantisBook} onClick={() => handleBookSelect(atlantisBook)} />
+                  
                   {/* Existing Books */}
-                  {popularBooks.slice(0, 47).map((book) => (
+                  {popularBooks.slice(0, 46).map((book) => (
                     <div key={book.id} className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-purple-200 cursor-pointer" onClick={() => handleBookSelect(book)}>
                       <div className={`${book.color} rounded-lg p-6 text-center mb-3`}>
                         <div className="text-4xl mb-2">{book.image}</div>
@@ -581,8 +611,11 @@ export default function App() {
                 {/* Dragon Book - First Position */}
                 <BookPreview book={dragonBook} onClick={() => handleBookSelect(dragonBook)} />
                 
+                {/* Atlantis Book - Second Position */}
+                <BookPreview book={atlantisBook} onClick={() => handleBookSelect(atlantisBook)} />
+                
                 {/* Existing Books */}
-                {popularBooks.slice(0, 47).map((book) => (
+                {popularBooks.slice(0, 46).map((book) => (
                   <div key={book.id} className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-purple-200 cursor-pointer" onClick={() => handleBookSelect(book)}>
                     <div className={`${book.color} rounded-lg p-6 text-center mb-3`}>
                       <div className="text-4xl mb-2">{book.image}</div>
