@@ -63,16 +63,8 @@ const CartSidebar = ({ cartItems, onRemoveItem, onCheckout, isOpen, onClose, onU
 
   return (
     <>
-      {/* Overlay */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={onClose}
-        />
-      )}
-
-      {/* Cart Sidebar */}
-      <div className={`fixed right-0 top-0 h-full w-80 bg-white/95 backdrop-blur-md border-l border-purple-200 shadow-xl transform transition-transform duration-500 ease-in-out z-50 ${
+      {/* Cart Sidebar - Fixed on right side */}
+      <div className={`fixed right-0 top-0 h-full w-80 bg-white border-l border-purple-200 shadow-lg transform transition-transform duration-300 ease-in-out z-30 ${
         isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}>
         <div className="flex flex-col h-full">
@@ -82,8 +74,9 @@ const CartSidebar = ({ cartItems, onRemoveItem, onCheckout, isOpen, onClose, onU
             <button 
               onClick={onClose}
               className="text-purple-500 hover:text-purple-700 transition-colors"
+              title="Close Cart"
             >
-              ✕
+              ←
             </button>
           </div>
 
