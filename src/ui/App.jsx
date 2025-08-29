@@ -185,9 +185,9 @@ export default function App() {
     }
   }, [cartItems])
 
-  // Auto-open cart when items are added
+  // Auto-open cart when items are added (but only if cart is empty)
   useEffect(() => {
-    if (cartItems.length > 0 && !isCartOpen) {
+    if (cartItems.length > 0 && !isCartOpen && cartItems.length === 1) {
       setIsCartOpen(true)
     }
   }, [cartItems.length, isCartOpen])
@@ -408,7 +408,9 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className={`min-h-screen relative overflow-hidden transition-all duration-300 ${
+      isCartOpen ? 'mr-80' : 'mr-0'
+    }`}>
       {/* Animated Background - Coloring Book Pages Transition */}
       <div className="fixed inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 animate-pulse"></div>
@@ -470,8 +472,12 @@ export default function App() {
                   Browse Popular Books
                 </button>
                 <button 
-                  onClick={() => setIsCartOpen(true)}
-                  className="relative px-4 py-2 rounded-full font-medium bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-lg transition-all"
+                  onClick={() => setIsCartOpen(!isCartOpen)}
+                  className={`relative px-4 py-2 rounded-full font-medium transition-all ${
+                    isCartOpen 
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg' 
+                      : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-lg'
+                  }`}
                 >
                   🛒 Cart ({cartItems.length})
                 </button>
