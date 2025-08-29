@@ -5,6 +5,7 @@ import { track } from '../lib/analytics'
 import CheckoutFlow from './CheckoutFlow'
 import BookPreview from './BookPreview'
 import BookDetail from './BookDetail'
+import CartSidebar from './CartSidebar'
 
 const enhancers = [
   'make it silly', 'underwater world', 'add friendly animals',
@@ -162,6 +163,9 @@ export default function App() {
   const [expandedEnhancer, setExpandedEnhancer] = useState(null)
   const [showCheckout, setShowCheckout] = useState(false)
   const [selectedBook, setSelectedBook] = useState(null)
+  const [cartItems, setCartItems] = useState([])
+  const [cartBusy, setCartBusy] = useState(false)
+  const [isCartOpen, setIsCartOpen] = useState(false)
 
   
   React.useEffect(() => {
@@ -280,20 +284,70 @@ export default function App() {
   const handleBookAddToCart = async () => {
     if (!selectedBook) return
     
-    setBusy(true)
+    setCartBusy(true)
     setErr(null)
     
     try {
-      // Add the selected book to cart
-      const cart = await createCart()
-      await addCustomBookToCart(cart.id, selectedBook.id, selectedBook.prompt)
+      // Add book to local cart state
+      const cartItem = {
+        id: selectedBook.id,
+        title: selectedBook.title,
+        prompt: selectedBook.prompt,
+        images: selectedBook.images,
+        price: 19.99
+      }
       
-      setShowCheckout(true)
+      setCartItems(prev => [...prev, cartItem])
+      
+      // Show success message
+      setErr(null)
+      
+      // Open cart sidebar
+      setIsCartOpen(true)
+      
+      // Track the add to cart event
+      track('book_added_to_cart', {
+        bookId: selectedBook.id,
+        bookTitle: selectedBook.title,
+        cartTotal: cartItems.length + 1
+      })
+      
     } catch (error) {
       console.error('Add to cart error:', error)
       setErr('Failed to add to cart. Please try again.')
     } finally {
-      setBusy(false)
+      setCartBusy(false)
+    }
+  }
+
+  const handleRemoveFromCart = (index) => {
+    setCartItems(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handleCartCheckout = async () => {
+    if (cartItems.length === 0) return
+    
+    setCartBusy(true)
+    setErr(null)
+    
+    try {
+      // Create Shopify cart and add all items
+      const cart = await createCart()
+      
+      for (const item of cartItems) {
+        await addCustomBookToCart(cart.id, item.id, item.prompt)
+      }
+      
+      // Clear cart and show checkout
+      setCartItems([])
+      setIsCartOpen(false)
+      setShowCheckout(true)
+      
+    } catch (error) {
+      console.error('Checkout error:', error)
+      setErr('Failed to proceed to checkout. Please try again.')
+    } finally {
+      setCartBusy(false)
     }
   }
 
@@ -358,6 +412,12 @@ export default function App() {
                   }`}
                 >
                   Browse Popular Books
+                </button>
+                <button 
+                  onClick={() => setIsCartOpen(true)}
+                  className="relative px-4 py-2 rounded-full font-medium bg-green-500 text-white hover:bg-green-600 transition-all"
+                >
+                  🛒 Cart ({cartItems.length})
                 </button>
 
               </nav>
@@ -627,6 +687,15 @@ export default function App() {
         </section>
           )}
       </main>
+
+        {/* Cart Sidebar */}
+        <CartSidebar
+          cartItems={cartItems}
+          onRemoveItem={handleRemoveFromCart}
+          onCheckout={handleCartCheckout}
+          isOpen={isCartOpen}
+          onClose={() => setIsCartOpen(false)}
+        />
 
         {/* Checkout Flow */}
         {showCheckout && (
