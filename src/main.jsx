@@ -17,10 +17,22 @@ async function initializeApp() {
   `
   
   try {
-    // Validate configuration
-    const isValid = await validateConfig()
+    // Validate configuration with timeout
+    const configPromise = validateConfig()
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Configuration timeout')), 10000)
+    )
+    
+    const isValid = await Promise.race([configPromise, timeoutPromise])
     
     if (!isValid) {
+      // In development, continue anyway
+      if (import.meta.env.DEV) {
+        console.log('Development mode: Continuing despite config validation failure')
+        createRoot(root).render(<App />)
+        return
+      }
+      
       root.innerHTML = `
         <div style="padding: 2rem; text-align: center; font-family: system-ui, sans-serif;">
           <h1>Configuration Error</h1>
@@ -37,6 +49,18 @@ async function initializeApp() {
     
   } catch (error) {
     console.error('Failed to initialize app:', error)
+    
+    // In development, try to render anyway
+    if (import.meta.env.DEV) {
+      console.log('Development mode: Attempting to render app despite initialization error')
+      try {
+        createRoot(root).render(<App />)
+        return
+      } catch (renderError) {
+        console.error('Failed to render app:', renderError)
+      }
+    }
+    
     root.innerHTML = `
       <div style="padding: 2rem; text-align: center; font-family: system-ui, sans-serif;">
         <h1>Initialization Error</h1>
