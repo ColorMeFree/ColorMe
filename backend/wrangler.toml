@@ -2,5 +2,34 @@ name = "colorbook-backend-worldfrees"
 main = "src/index.ts"
 compatibility_date = "2024-11-12"
 
+# Environment variables (non-sensitive)
 [vars]
 S3_BUCKET = "colorbook"
+SHOPIFY_DOMAIN = "e76594-67.myshopify.com"
+BACKEND_URL = "https://colorbook-backend-worldfrees.3dworldjames.workers.dev"
+WEBHOOK_URL = "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/webhooks/shopify/orders/paid"
+PERSONAL_DOMAIN = "free1mind.com"
+SHOPIFY_STOREFRONT_TOKEN = "64b1058926b92710a97b8dadbcfff10d"
+SHOPIFY_VARIANT_GID = "gid://shopify/ProductVariant/50288087105826"
+
+# Secrets (these should be set using: wrangler secret put SECRET_NAME)
+# The following secrets need to be set in Cloudflare:
+# - STABILITY_API_KEY
+# - SHOPIFY_WEBHOOK_SECRET
+# - SHOPIFY_STOREFRONT_TOKEN
+# - SHOPIFY_ADMIN_TOKEN
+# - LULU_API_KEY
+# - LULU_CLIENT_SECRET
+
+# KV namespace for storing design and customer data
+# TODO: Create KV namespace and add proper IDs
+# [[kv_namespaces]]
+# binding = "COLORBOOK_KV"
+# id = "your-kv-namespace-id"
+# preview_id = "your-preview-kv-namespace-id"
+
+# R2 bucket for image storage
+# TODO: Create R2 bucket and add proper configuration
+# [[r2_buckets]]
+# binding = "COLORBOOK_R2"
+# bucket_name = "colorbook-images"

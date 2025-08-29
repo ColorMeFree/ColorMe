@@ -1,0 +1,10 @@
+[33m4bc7ceb[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Add secure production build script - no secrets exposed
+[33m2e9ffd3[m Fix GitHub Pages environment variables - add secrets setup guide
+[33m4b778f5[m Complete ColorMeFree website with Shopify integration - Stability AI disabled for testing
+[33m6aaa52c[m Fix environment variables and Shopify integration - Add VITE_ prefix for frontend env vars - Update config.js to use import.meta.env - Fix white screen issue - Complete Shopify product and webhook setup - Update env.example with correct format
+[33m304f911[m Initial commit: ColorMeFree MVP - Custom coloring book generator with AI integration
+[33m6fbe467[m CRITICAL: Secure all sensitive information - remove exposed API keys and tokens
+[33mca28d40[m Fix vite config for GitHub Pages deployment
+[33m76ed615[m Second deployment trigger
+[33ma01eb91[m Trigger GitHub Pages deployment
+[33m3e5f6f4[m Final GitHub Pages workflow configuration

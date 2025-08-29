@@ -80,3 +80,8 @@ export class ShopifyService {
 
 // Export singleton instance
 export const shopifyService = new ShopifyService('')
+
+// Factory function to create ShopifyService with environment variables
+export function createShopifyService(env: any): ShopifyService {
+  return new ShopifyService(env.SHOPIFY_WEBHOOK_SECRET || '')
+}

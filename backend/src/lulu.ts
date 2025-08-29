@@ -146,3 +146,11 @@ export class LuluService {
 
 // Export singleton instance - will use environment variables
 export const luluService = new LuluService()
+
+// Factory function to create LuluService with environment variables
+export function createLuluService(env: any): LuluService {
+  return new LuluService(
+    env.LULU_API_KEY || '',
+    env.LULU_CLIENT_SECRET || ''
+  )
+}

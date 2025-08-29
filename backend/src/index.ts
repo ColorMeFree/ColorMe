@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { luluService } from './lulu'
-import { shopifyService } from './shopify'
+import { luluService, createLuluService } from './lulu'
+import { shopifyService, createShopifyService } from './shopify'
 import { StabilityAIService } from './stability-ai'
 import { shopifyWebhookHandler } from './shopify-webhooks'
 
@@ -13,12 +13,22 @@ app.get('/', async (c) => {
   const stabilityAIService = new StabilityAIService(c.env?.STABILITY_API_KEY || '')
   const stabilityHealth = await stabilityAIService.healthCheck()
   
+  // Test service configurations
+  const luluService = createLuluService(c.env)
+  const shopifyService = createShopifyService(c.env)
+  
   return c.json({ 
     status: 'ok', 
     service: 'ColorMeFree Backend',
     version: '1.0.0',
     features: ['stability-ai', 'lulu', 'shopify'],
-    stabilityAI: stabilityHealth
+    stabilityAI: stabilityHealth,
+    config: {
+      hasStabilityKey: !!c.env?.STABILITY_API_KEY,
+      hasLuluKeys: !!(c.env?.LULU_API_KEY && c.env?.LULU_CLIENT_SECRET),
+      hasShopifySecret: !!c.env?.SHOPIFY_WEBHOOK_SECRET,
+      shopifyDomain: c.env?.SHOPIFY_DOMAIN || 'not-set'
+    }
   })
 })
 
@@ -28,13 +38,13 @@ app.post('/generate-previews', async (c) => {
   try {
     console.log('Received prompt for preview generation:', prompt)
     
-    // Use placeholder images for now (Stability AI disabled)
+    // Use actual images for now (Stability AI disabled)
     const sessionId = crypto.randomUUID()
     const images = [
-      'https://via.placeholder.com/400x600/ffffff/000000?text=Coloring+Page+1&prompt=' + encodeURIComponent(prompt),
-      'https://via.placeholder.com/400x600/ffffff/000000?text=Coloring+Page+2&prompt=' + encodeURIComponent(prompt),
-      'https://via.placeholder.com/400x600/ffffff/000000?text=Coloring+Page+3&prompt=' + encodeURIComponent(prompt),
-      'https://via.placeholder.com/400x600/ffffff/000000?text=Coloring+Page+4&prompt=' + encodeURIComponent(prompt)
+      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80',
+      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80',
+      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80',
+      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80'
     ]
     
     console.log('Generated placeholder preview images:', images)
@@ -65,6 +75,10 @@ app.post('/lock-design', async (c) => {
 
 app.post('/order-paid', async (c) => {
   try {
+    // Create services with environment variables
+    const shopifyService = createShopifyService(c.env)
+    const luluService = createLuluService(c.env)
+    
     // Verify Shopify HMAC signature
     const hmac = c.req.header('X-Shopify-Hmac-Sha256')
     const body = await c.req.text()
@@ -86,9 +100,9 @@ app.post('/order-paid', async (c) => {
       try {
         console.log('Processing custom book order:', bookOrder)
         
-        // Generate remaining 26 pages using placeholder images (Stability AI disabled)
+        // Generate remaining 26 pages using actual images (Stability AI disabled)
         const remainingPages = Array.from({ length: 26 }, (_, i) => 
-          `https://via.placeholder.com/400x600/ffffff/000000?text=Page+${i + 5}&prompt=${encodeURIComponent(bookOrder.prompt)}`
+          `https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80`
         )
         
         // TODO: Assemble 30-page PDF (4 chosen + 26 generated)
@@ -132,10 +146,71 @@ app.get('/print-job/:jobId', async (c) => {
   const jobId = c.req.param('jobId')
   
   try {
+    const luluService = createLuluService(c.env)
     const status = await luluService.getPrintJobStatus(jobId)
     return c.json(status)
   } catch (error) {
+    console.error('Failed to get print job status:', error)
     return c.json({ error: 'Failed to get print job status' }, 500)
+  }
+})
+
+// Configuration endpoint for frontend
+app.get('/config', async (c) => {
+  return c.json({
+    shopifyDomain: c.env?.SHOPIFY_DOMAIN || '',
+    storefrontToken: c.env?.SHOPIFY_STOREFRONT_TOKEN || '',
+    backendUrl: c.env?.BACKEND_URL || '',
+    personalDomain: c.env?.PERSONAL_DOMAIN || '',
+    // Note: We'll add the product variant GID here once we create it
+    customBookVariantGID: c.env?.SHOPIFY_VARIANT_GID || '',
+    maxCycles: 5
+  })
+})
+
+// Secure Shopify product management endpoint
+app.get('/shopify/product/:productId', async (c) => {
+  const productId = c.req.param('productId')
+  
+  try {
+    // Access secrets securely from Cloudflare
+    const adminToken = c.env?.SHOPIFY_ADMIN_TOKEN
+    const shopifyDomain = c.env?.SHOPIFY_DOMAIN
+    
+    if (!adminToken || !shopifyDomain) {
+      return c.json({ error: 'Shopify configuration not available' }, 500)
+    }
+    
+    // Fetch product details from Shopify
+    const response = await fetch(`https://${shopifyDomain}/admin/api/2024-07/products/${productId}.json`, {
+      headers: {
+        'X-Shopify-Access-Token': adminToken,
+        'Content-Type': 'application/json'
+      }
+    })
+    
+    if (!response.ok) {
+      return c.json({ error: 'Failed to fetch product from Shopify' }, response.status)
+    }
+    
+    const productData = await response.json()
+    
+    // Return only non-sensitive product information
+    return c.json({
+      productId: productData.product.id,
+      title: productData.product.title,
+      variants: productData.product.variants.map((variant: any) => ({
+        id: variant.id,
+        gid: `gid://shopify/ProductVariant/${variant.id}`,
+        title: variant.title,
+        price: variant.price,
+        sku: variant.sku
+      }))
+    })
+    
+  } catch (error) {
+    console.error('Error fetching Shopify product:', error)
+    return c.json({ error: 'Internal server error' }, 500)
   }
 })
 
