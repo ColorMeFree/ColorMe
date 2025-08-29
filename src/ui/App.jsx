@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { CONFIG } from '../config'
 import { createCart, addCustomBookToCart } from '../lib/shopify'
 import { track } from '../lib/analytics'
