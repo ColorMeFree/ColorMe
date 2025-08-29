@@ -4,6 +4,7 @@ import { createCart, addCustomBookToCart } from '../lib/shopify'
 import { track } from '../lib/analytics'
 import CheckoutFlow from './CheckoutFlow'
 import BookPreview from './BookPreview'
+import BookDetail from './BookDetail'
 
 const enhancers = [
   'make it silly', 'underwater world', 'add friendly animals',
@@ -147,6 +148,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('create')
   const [expandedEnhancer, setExpandedEnhancer] = useState(null)
   const [showCheckout, setShowCheckout] = useState(false)
+  const [selectedBook, setSelectedBook] = useState(null)
 
   
   React.useEffect(() => {
@@ -239,6 +241,35 @@ export default function App() {
       setErr(e.message) 
     } finally { 
       setBusy(false) 
+    }
+  }
+
+  const handleBookSelect = (book) => {
+    setSelectedBook(book)
+    setActiveTab('create') // Show the create section with the selected book
+  }
+
+  const handleBookBack = () => {
+    setSelectedBook(null)
+  }
+
+  const handleBookAddToCart = async () => {
+    if (!selectedBook) return
+    
+    setBusy(true)
+    setErr(null)
+    
+    try {
+      // Add the selected book to cart
+      const cart = await createCart()
+      await addCustomBookToCart(cart.id, selectedBook.id, selectedBook.prompt)
+      
+      setShowCheckout(true)
+    } catch (error) {
+      console.error('Add to cart error:', error)
+      setErr('Failed to add to cart. Please try again.')
+    } finally {
+      setBusy(false)
     }
   }
 
@@ -390,6 +421,17 @@ export default function App() {
                 </div>
               </section>
 
+              {/* Selected Book Display */}
+              {selectedBook && (
+                <section className="mb-12">
+                  <BookDetail 
+                    book={selectedBook}
+                    onAddToCart={handleBookAddToCart}
+                    onBack={handleBookBack}
+                  />
+                </section>
+              )}
+
               {/* Preview Section */}
               {cycles.length > 0 && (
                 <section className="mb-12">
@@ -503,11 +545,11 @@ export default function App() {
                 
                 <div className="grid grid-cols-3 gap-4">
                   {/* Dragon Book - First Position */}
-                  <BookPreview book={dragonBook} />
+                  <BookPreview book={dragonBook} onClick={() => handleBookSelect(dragonBook)} />
                   
                   {/* Existing Books */}
                   {popularBooks.slice(0, 47).map((book) => (
-                    <div key={book.id} className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-purple-200">
+                    <div key={book.id} className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-purple-200 cursor-pointer" onClick={() => handleBookSelect(book)}>
                       <div className={`${book.color} rounded-lg p-6 text-center mb-3`}>
                         <div className="text-4xl mb-2">{book.image}</div>
                       </div>
@@ -534,11 +576,11 @@ export default function App() {
               
               <div className="grid grid-cols-3 gap-4">
                 {/* Dragon Book - First Position */}
-                <BookPreview book={dragonBook} />
+                <BookPreview book={dragonBook} onClick={() => handleBookSelect(dragonBook)} />
                 
                 {/* Existing Books */}
                 {popularBooks.slice(0, 47).map((book) => (
-                  <div key={book.id} className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-purple-200">
+                  <div key={book.id} className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-purple-200 cursor-pointer" onClick={() => handleBookSelect(book)}>
                     <div className={`${book.color} rounded-lg p-6 text-center mb-3`}>
                       <div className="text-4xl mb-2">{book.image}</div>
                     </div>
