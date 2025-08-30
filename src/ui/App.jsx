@@ -101,6 +101,32 @@ const magicalBeastsBook = {
     ]
   }
 
+  const naturalButterflyBook = {
+    id: 6,
+    title: "Natural Butterfly",
+    category: "nature",
+    prompt: "geometric butterflies with natural patterns",
+    images: [
+      "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756525490829-01sb6pfnn.png",
+      "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756525496170-0tc8r2k9o.png",
+      "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756525501601-bouqn3s5k.png",
+      "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756525531546-z5j4ssw85.png"
+    ]
+  }
+
+  const classicAndFutureCarsBook = {
+    id: 7,
+    title: "Classic and Future Cars",
+    category: "vehicles",
+    prompt: "classic and future cars racing through time",
+    images: [
+      "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80",
+      "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80",
+      "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80",
+      "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80"
+    ]
+  }
+
 // Popular coloring book categories with sample images (child-friendly)
 const popularBooks = [
   { id: 1, title: "Dinosaur Adventure", category: "dinosaurs", image: "🦖", color: "bg-green-100" },
@@ -766,6 +792,12 @@ export default function App() {
                   {/* Princess Dreams Book - New Position */}
                   <BookPreview book={princessDreamsBook} onClick={() => handleBookSelect(princessDreamsBook)} />
                   
+                  {/* Natural Butterfly Book - New Position */}
+                  <BookPreview book={naturalButterflyBook} onClick={() => handleBookSelect(naturalButterflyBook)} />
+
+                  {/* Classic and Future Cars Book - New Position */}
+                  <BookPreview book={classicAndFutureCarsBook} onClick={() => handleBookSelect(classicAndFutureCarsBook)} />
+                  
                   {/* Existing Books */}
                   {popularBooks.slice(0, 46).map((book) => (
                     <div key={book.id} className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-purple-200 cursor-pointer" onClick={() => handleBookSelect(book)}>
@@ -811,6 +843,12 @@ export default function App() {
                 
                 {/* Princess Dreams Book - New Position */}
                 <BookPreview book={princessDreamsBook} onClick={() => handleBookSelect(princessDreamsBook)} />
+                
+                {/* Natural Butterfly Book - New Position */}
+                <BookPreview book={naturalButterflyBook} onClick={() => handleBookSelect(naturalButterflyBook)} />
+
+                {/* Classic and Future Cars Book - New Position */}
+                <BookPreview book={classicAndFutureCarsBook} onClick={() => handleBookSelect(classicAndFutureCarsBook)} />
                 
                 {/* Existing Books */}
                 {popularBooks.slice(0, 46).map((book) => (

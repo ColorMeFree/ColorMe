@@ -5,6 +5,9 @@ export interface FilterResult {
   isValid: boolean
   reason?: string
   category?: string
+  shouldReplacePrompt?: boolean
+  replacementText?: string
+  shouldBlockGeneration?: boolean
 }
 
 export class ContentFilterService {
@@ -39,32 +42,23 @@ export class ContentFilterService {
   filterPrompt(userPrompt: string): FilterResult {
     const lowerPrompt = userPrompt.toLowerCase()
     
-    // Check for explicit content
+    // Check for explicit content that we should block entirely
     for (const [category, keywords] of Object.entries(this.explicitKeywords)) {
       for (const keyword of keywords) {
         if (lowerPrompt.includes(keyword)) {
           return {
             isValid: false,
-            reason: `We don't create children's books with ${category} content. Please keep it family-friendly!`,
-            category
+            reason: `We do not generate inappropriate imagery`,
+            category,
+            shouldReplacePrompt: true,
+            replacementText: "We do not generate inappropriate imagery",
+            shouldBlockGeneration: true
           }
         }
       }
     }
     
-    // Check for warning content (allow but flag)
-    for (const [category, keywords] of Object.entries(this.warningKeywords)) {
-      for (const keyword of keywords) {
-        if (lowerPrompt.includes(keyword)) {
-          return {
-            isValid: true,
-            reason: `Note: This prompt contains ${category} elements. We'll make it child-appropriate.`,
-            category
-          }
-        }
-      }
-    }
-    
+    // If we get here, let Stability AI handle the content moderation
     return { isValid: true }
   }
 
