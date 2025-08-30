@@ -127,6 +127,34 @@ const magicalBeastsBook = {
     ]
   }
 
+  // Web of Spiders Book (from the amazing spider prompt generation!)
+  const webOfSpidersBook = {
+    id: 8,
+    title: "Web of Spiders",
+    category: "nature",
+    prompt: "large spiderweb with people trapped screaming, and a detailed robot spider! Very spooky, scary, fangs. detailed spider web",
+    images: [
+      "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756531101637-0l4vxz3mc.png",
+      "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756531107608-3t3j24cx1.png",
+      "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756531113344-u3jqlz83j.png",
+      "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756531189806-b03iw1g6i.png"
+    ]
+  }
+
+  // Childhood Games Book (from children playing prompt generation!)
+  const childhoodGamesBook = {
+    id: 9,
+    title: "Childhood Games",
+    category: "activities",
+    prompt: "children playing traditional games and activities",
+    images: [
+      "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756531400000-childhood-games-1.png",
+      "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756531400001-childhood-games-2.png",
+      "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756531400002-childhood-games-3.png",
+      "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756531400003-childhood-games-4.png"
+    ]
+  }
+
 // Popular coloring book categories with sample images (child-friendly)
 const popularBooks = [
   { id: 1, title: "Dinosaur Adventure", category: "dinosaurs", image: "🦖", color: "bg-green-100" },
@@ -471,7 +499,11 @@ export default function App() {
       const cart = await createCart()
       
       for (const item of cartItems) {
-        await addCustomBookToCart(cart.id, item.id, item.prompt)
+        await addCustomBookToCart(cart.id, {
+          designId: item.id,
+          prompt: item.prompt,
+          variantGID: CONFIG.CUSTOM_BOOK_VARIANT_GID
+        })
       }
       
       // Keep cart open and show checkout
@@ -798,6 +830,12 @@ export default function App() {
                   {/* Classic and Future Cars Book - New Position */}
                   <BookPreview book={classicAndFutureCarsBook} onClick={() => handleBookSelect(classicAndFutureCarsBook)} />
                   
+                  {/* Web of Spiders Book - New Position */}
+                  <BookPreview book={webOfSpidersBook} onClick={() => handleBookSelect(webOfSpidersBook)} />
+                  
+                  {/* Childhood Games Book - New Position */}
+                  <BookPreview book={childhoodGamesBook} onClick={() => handleBookSelect(childhoodGamesBook)} />
+                  
                   {/* Existing Books */}
                   {popularBooks.slice(0, 46).map((book) => (
                     <div key={book.id} className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-purple-200 cursor-pointer" onClick={() => handleBookSelect(book)}>
@@ -849,6 +887,12 @@ export default function App() {
 
                 {/* Classic and Future Cars Book - New Position */}
                 <BookPreview book={classicAndFutureCarsBook} onClick={() => handleBookSelect(classicAndFutureCarsBook)} />
+                
+                {/* Web of Spiders Book - New Position */}
+                <BookPreview book={webOfSpidersBook} onClick={() => handleBookSelect(webOfSpidersBook)} />
+                
+                {/* Childhood Games Book - New Position */}
+                <BookPreview book={childhoodGamesBook} onClick={() => handleBookSelect(childhoodGamesBook)} />
                 
                 {/* Existing Books */}
                 {popularBooks.slice(0, 46).map((book) => (

@@ -41,12 +41,38 @@ export default function CheckoutFlow({ selected, prompt, onClose, onComplete, ca
     setError(null)
     
     try {
+      // Wait for config to load if needed
+      let attempts = 0
+      while ((!CONFIG.SHOPIFY_DOMAIN || !CONFIG.STOREFRONT_TOKEN) && attempts < 10) {
+        console.log(`Waiting for config to load... attempt ${attempts + 1}`)
+        await new Promise(resolve => setTimeout(resolve, 500))
+        attempts++
+      }
+      
+      // Debug: Log configuration
+      console.log('Checkout config:', {
+        SHOPIFY_DOMAIN: CONFIG.SHOPIFY_DOMAIN,
+        STOREFRONT_TOKEN: CONFIG.STOREFRONT_TOKEN ? '***' : 'MISSING',
+        CUSTOM_BOOK_VARIANT_GID: CONFIG.CUSTOM_BOOK_VARIANT_GID
+      })
+      
+      // Validate configuration
+      if (!CONFIG.SHOPIFY_DOMAIN || !CONFIG.STOREFRONT_TOKEN || !CONFIG.CUSTOM_BOOK_VARIANT_GID) {
+        throw new Error(`Shopify configuration is incomplete. Domain: ${CONFIG.SHOPIFY_DOMAIN || 'MISSING'}, Token: ${CONFIG.STOREFRONT_TOKEN ? 'PRESENT' : 'MISSING'}, Variant: ${CONFIG.CUSTOM_BOOK_VARIANT_GID || 'MISSING'}`)
+      }
+      
       // Create cart with all items
       const newCart = await createCart()
+      console.log('Cart created:', newCart)
       
       // Add all cart items to Shopify cart
       for (const item of cartItems) {
-        await addCustomBookToCart(newCart.id, item.id, item.prompt)
+        console.log('Adding item to cart:', item)
+        await addCustomBookToCart(newCart.id, {
+          designId: item.id,
+          prompt: item.prompt,
+          variantGID: CONFIG.CUSTOM_BOOK_VARIANT_GID
+        })
       }
       
       setCart(newCart)
@@ -59,7 +85,7 @@ export default function CheckoutFlow({ selected, prompt, onClose, onComplete, ca
       
     } catch (error) {
       console.error('Checkout initialization failed:', error)
-      setError('Failed to initialize checkout. Please try again.')
+      setError(`Failed to initialize checkout: ${error.message}`)
     } finally {
       setIsLoading(false)
     }
