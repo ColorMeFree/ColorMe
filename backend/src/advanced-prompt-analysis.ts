@@ -561,265 +561,174 @@ export class AdvancedPromptAnalysisService {
     return enhancements[sceneIndex % enhancements.length]
   }
 
-  // ENHANCED: Semantic word database with direct recognition only (no bidirectional associations)
+  // ENHANCED: Clean, focused semantic word database with only relevant connections
   private getRecognizedWords(prompt: string): string[] {
     const lower = prompt.toLowerCase()
     const recognizedWords: string[] = []
     
-    // Check for direct word matches only (no associations)
+    // Split prompt into words for full word matching
+    const promptWords = lower.split(/\s+/)
+    
+    // CLEAN: Focused semantic associations - only words that truly belong together
     const semanticAssociations = {
-      // Space & Astronomy (15 words + associations)
-      'spaceship': ['shuttle', 'rocket', 'meteor', 'stars', 'planet', 'moon', 'aliens', 'galaxy', 'comet', 'asteroid', 'satellite', 'orbit', 'cosmos', 'nebula', 'black hole'],
-      'moon': ['spaceship', 'stars', 'planet', 'meteor', 'night', 'crater', 'astronaut', 'telescope', 'space', 'rocket', 'alien', 'galaxy', 'comet', 'satellite', 'orbit'],
-      'stars': ['moon', 'spaceship', 'planet', 'night', 'galaxy', 'telescope', 'space', 'meteor', 'comet', 'nebula', 'cosmos', 'astronaut', 'rocket', 'alien', 'satellite'],
-      'planet': ['spaceship', 'moon', 'stars', 'galaxy', 'alien', 'meteor', 'comet', 'orbit', 'space', 'rocket', 'telescope', 'satellite', 'nebula', 'cosmos', 'astronaut'],
-      'alien': ['spaceship', 'planet', 'moon', 'stars', 'galaxy', 'meteor', 'comet', 'space', 'rocket', 'telescope', 'satellite', 'nebula', 'cosmos', 'astronaut', 'orbit'],
+      // Animals & Nature (only direct, obvious connections)
+      'cat': ['kitten', 'whiskers', 'paws', 'tail', 'purr', 'meow'],
+      'dog': ['puppy', 'paws', 'tail', 'bark', 'fetch', 'bone'],
+      'bird': ['wings', 'feathers', 'beak', 'nest', 'fly', 'song'],
+      'fish': ['fins', 'scales', 'gills', 'swim', 'ocean', 'water'],
+      'horse': ['mane', 'hooves', 'gallop', 'stable', 'hay', 'rider'],
+      'cow': ['milk', 'farm', 'grass', 'bell', 'pasture', 'farmer'],
+      'pig': ['mud', 'farm', 'snout', 'oink', 'sty', 'pink'],
+      'sheep': ['wool', 'farm', 'grass', 'flock', 'shepherd', 'meadow'],
+      'chicken': ['eggs', 'farm', 'feathers', 'cluck', 'coop', 'rooster'],
+      'duck': ['water', 'quack', 'wings', 'pond', 'swim', 'feathers'],
       
-      // Ocean & Marine (15 words + associations)
-      'ocean': ['fish', 'whale', 'dolphin', 'shark', 'octopus', 'crab', 'lobster', 'boat', 'ship', 'beach', 'island', 'underwater', 'coral', 'seaweed', 'pearl'],
-      'fish': ['ocean', 'whale', 'dolphin', 'shark', 'octopus', 'crab', 'lobster', 'boat', 'ship', 'beach', 'island', 'underwater', 'coral', 'seaweed', 'pearl'],
-      'whale': ['ocean', 'fish', 'dolphin', 'shark', 'octopus', 'boat', 'ship', 'beach', 'island', 'underwater', 'coral', 'seaweed', 'pearl', 'wave', 'splash'],
-      'dolphin': ['ocean', 'fish', 'whale', 'shark', 'octopus', 'boat', 'ship', 'beach', 'island', 'underwater', 'coral', 'seaweed', 'pearl', 'wave', 'splash'],
-      'beach': ['ocean', 'fish', 'whale', 'dolphin', 'shark', 'boat', 'ship', 'island', 'sand', 'shell', 'wave', 'splash', 'coral', 'seaweed', 'pearl'],
+      // Insects & Small Creatures (precise connections)
+      'butterfly': ['wings', 'antennae', 'flower', 'garden', 'fly', 'colors'],
+      'bee': ['honey', 'hive', 'wings', 'flower', 'buzz', 'yellow'],
+      'spider': ['web', 'eight legs', 'insect', 'arachnid', 'silk', 'prey'],
+      'ant': ['colony', 'hill', 'food', 'worker', 'queen', 'tunnel'],
+      'ladybug': ['spots', 'red', 'garden', 'leaves', 'fly', 'beneficial'],
       
-      // Forest & Nature (15 words + associations)
-      'tree': ['forest', 'bird', 'squirrel', 'owl', 'eagle', 'hawk', 'nest', 'leaf', 'branch', 'acorn', 'pinecone', 'woodpecker', 'deer', 'fox', 'bear'],
-      'forest': ['tree', 'bird', 'squirrel', 'owl', 'eagle', 'hawk', 'nest', 'leaf', 'branch', 'acorn', 'pinecone', 'woodpecker', 'deer', 'fox', 'bear'],
-      'bird': ['tree', 'forest', 'squirrel', 'owl', 'eagle', 'hawk', 'nest', 'leaf', 'branch', 'acorn', 'pinecone', 'woodpecker', 'wing', 'feather', 'beak'],
-      'squirrel': ['tree', 'forest', 'bird', 'owl', 'eagle', 'hawk', 'nest', 'leaf', 'branch', 'acorn', 'pinecone', 'woodpecker', 'deer', 'fox', 'bear'],
-      'owl': ['tree', 'forest', 'bird', 'squirrel', 'eagle', 'hawk', 'nest', 'leaf', 'branch', 'acorn', 'pinecone', 'woodpecker', 'night', 'moon', 'stars'],
+      // Fantasy & Magic (clear thematic connections)
+      'dragon': ['fire', 'wings', 'scales', 'treasure', 'cave', 'knight'],
+      'fairy': ['wings', 'magic', 'sparkle', 'flower', 'forest', 'wand'],
+      'wizard': ['magic', 'spell', 'wand', 'robe', 'hat', 'castle'],
+      'unicorn': ['horn', 'rainbow', 'magic', 'forest', 'white', 'pure'],
+      'princess': ['crown', 'castle', 'dress', 'royal', 'kingdom', 'ball'],
       
-      // Farm & Agriculture (15 words + associations)
-      'farm': ['cow', 'pig', 'sheep', 'chicken', 'duck', 'horse', 'tractor', 'barn', 'hay', 'corn', 'wheat', 'farmer', 'field', 'fence', 'gate'],
-      'cow': ['farm', 'pig', 'sheep', 'chicken', 'duck', 'horse', 'tractor', 'barn', 'hay', 'corn', 'wheat', 'farmer', 'field', 'fence', 'gate'],
-      'pig': ['farm', 'cow', 'sheep', 'chicken', 'duck', 'horse', 'tractor', 'barn', 'hay', 'corn', 'wheat', 'farmer', 'field', 'fence', 'gate'],
-      'sheep': ['farm', 'cow', 'pig', 'chicken', 'duck', 'horse', 'tractor', 'barn', 'hay', 'corn', 'wheat', 'farmer', 'field', 'fence', 'gate'],
-      'tractor': ['farm', 'cow', 'pig', 'sheep', 'chicken', 'duck', 'horse', 'barn', 'hay', 'corn', 'wheat', 'farmer', 'field', 'fence', 'gate'],
+      // Vehicles (functional connections)
+      'truck': ['wheels', 'cargo', 'driver', 'road', 'delivery', 'big'],
+      'bus': ['wheels', 'passengers', 'driver', 'road', 'school', 'stop'],
+      'train': ['tracks', 'engine', 'cars', 'station', 'conductor', 'tunnel'],
+      'airplane': ['wings', 'engine', 'pilot', 'sky', 'airport', 'flight'],
+      'boat': ['water', 'sail', 'captain', 'ocean', 'fish', 'anchor'],
       
-      // City & Urban (15 words + associations)
-      'city': ['car', 'truck', 'bus', 'train', 'building', 'house', 'skyscraper', 'street', 'traffic light', 'crosswalk', 'park', 'playground', 'library', 'store', 'restaurant'],
-      'building': ['city', 'car', 'truck', 'bus', 'train', 'house', 'skyscraper', 'street', 'traffic light', 'crosswalk', 'park', 'playground', 'library', 'store', 'restaurant'],
-      'house': ['city', 'car', 'truck', 'bus', 'train', 'building', 'skyscraper', 'street', 'traffic light', 'crosswalk', 'park', 'playground', 'library', 'store', 'restaurant'],
-      'street': ['city', 'car', 'truck', 'bus', 'train', 'building', 'house', 'skyscraper', 'traffic light', 'crosswalk', 'park', 'playground', 'library', 'store', 'restaurant'],
-      'car': ['city', 'truck', 'bus', 'train', 'building', 'house', 'skyscraper', 'street', 'traffic light', 'crosswalk', 'park', 'playground', 'library', 'store', 'restaurant'],
+      // Buildings & Places (contextual connections)
+      'house': ['home', 'family', 'roof', 'windows', 'door', 'garden'],
+      'castle': ['tower', 'king', 'princess', 'knight', 'moat', 'royal'],
+      'school': ['teacher', 'student', 'classroom', 'books', 'learning', 'friends'],
+      'hospital': ['doctor', 'nurse', 'patient', 'medicine', 'health', 'care'],
+      'store': ['shopping', 'money', 'goods', 'clerk', 'customers', 'buy'],
       
-      // School & Learning (15 words + associations)
-      'school': ['teacher', 'student', 'book', 'pencil', 'crayon', 'paper', 'backpack', 'lunchbox', 'desk', 'chair', 'blackboard', 'library', 'playground', 'bus', 'friend'],
-      'teacher': ['school', 'student', 'book', 'pencil', 'crayon', 'paper', 'backpack', 'lunchbox', 'desk', 'chair', 'blackboard', 'library', 'playground', 'bus', 'friend'],
-      'book': ['school', 'teacher', 'student', 'pencil', 'crayon', 'paper', 'backpack', 'lunchbox', 'desk', 'chair', 'blackboard', 'library', 'playground', 'bus', 'friend'],
-      'pencil': ['school', 'teacher', 'student', 'book', 'crayon', 'paper', 'backpack', 'lunchbox', 'desk', 'chair', 'blackboard', 'library', 'playground', 'bus', 'friend'],
-      'student': ['school', 'teacher', 'book', 'pencil', 'crayon', 'paper', 'backpack', 'lunchbox', 'desk', 'chair', 'blackboard', 'library', 'playground', 'bus', 'friend'],
+      // Nature & Environment (natural connections)
+      'tree': ['leaves', 'branches', 'trunk', 'forest', 'shade', 'bird'],
+      'flower': ['petals', 'garden', 'bees', 'colors', 'spring', 'beautiful'],
+      'mountain': ['climb', 'peak', 'snow', 'hiking', 'rock', 'high'],
+      'ocean': ['water', 'fish', 'waves', 'beach', 'swimming', 'blue'],
+      'forest': ['trees', 'animals', 'hiking', 'green', 'nature', 'wild'],
       
-      // Home & Family (15 words + associations)
-      'home': ['mom', 'dad', 'family', 'baby', 'sister', 'brother', 'grandma', 'grandpa', 'house', 'kitchen', 'bedroom', 'living room', 'bathroom', 'garden', 'pet'],
-      'mom': ['home', 'dad', 'family', 'baby', 'sister', 'brother', 'grandma', 'grandpa', 'house', 'kitchen', 'bedroom', 'living room', 'bathroom', 'garden', 'pet'],
-      'dad': ['home', 'mom', 'family', 'baby', 'sister', 'brother', 'grandma', 'grandpa', 'house', 'kitchen', 'bedroom', 'living room', 'bathroom', 'garden', 'pet'],
-      'family': ['home', 'mom', 'dad', 'baby', 'sister', 'brother', 'grandma', 'grandpa', 'house', 'kitchen', 'bedroom', 'living room', 'bathroom', 'garden', 'pet'],
-      'baby': ['home', 'mom', 'dad', 'family', 'sister', 'brother', 'grandma', 'grandpa', 'house', 'kitchen', 'bedroom', 'living room', 'bathroom', 'garden', 'pet'],
+      // Weather & Seasons (climatic connections)
+      'rain': ['umbrella', 'clouds', 'wet', 'puddles', 'storm', 'water'],
+      'snow': ['cold', 'white', 'winter', 'snowman', 'sled', 'ice'],
+      'sun': ['hot', 'bright', 'summer', 'yellow', 'warm', 'sky'],
+      'cloud': ['sky', 'rain', 'white', 'fluffy', 'weather', 'storm'],
+      'storm': ['rain', 'thunder', 'lightning', 'wind', 'dark', 'clouds'],
       
-      // Weather & Seasons (15 words + associations)
-      'rain': ['umbrella', 'rainbow', 'puddle', 'cloud', 'storm', 'thunder', 'lightning', 'wet', 'muddy', 'splash', 'boots', 'coat', 'wind', 'cold', 'gray'],
-      'snow': ['winter', 'cold', 'ice', 'snowman', 'snowball', 'sled', 'ski', 'boots', 'coat', 'mittens', 'scarf', 'hat', 'white', 'frost', 'freezing'],
-      'sun': ['summer', 'hot', 'warm', 'bright', 'yellow', 'orange', 'beach', 'park', 'outdoor', 'shade', 'sunglasses', 'hat', 'ice cream', 'swimming', 'picnic'],
-      'cloud': ['rain', 'storm', 'thunder', 'lightning', 'gray', 'sky', 'wind', 'cold', 'wet', 'puddle', 'umbrella', 'rainbow', 'muddy', 'splash', 'boots'],
-      'storm': ['rain', 'cloud', 'thunder', 'lightning', 'wind', 'dark', 'gray', 'wet', 'puddle', 'umbrella', 'rainbow', 'muddy', 'splash', 'boots', 'coat'],
+      // Food & Eating (culinary connections)
+      'pizza': ['cheese', 'tomato', 'crust', 'hot', 'delicious', 'dinner'],
+      'cake': ['birthday', 'sweet', 'frosting', 'candles', 'party', 'celebration'],
+      'ice cream': ['cold', 'sweet', 'cone', 'summer', 'delicious', 'treat'],
+      'apple': ['red', 'fruit', 'sweet', 'tree', 'healthy', 'snack'],
+      'banana': ['yellow', 'fruit', 'monkey', 'peel', 'sweet', 'energy'],
       
-      // Transportation (15 words + associations)
-      'train': ['track', 'station', 'ticket', 'passenger', 'conductor', 'railroad', 'tunnel', 'bridge', 'platform', 'schedule', 'commute', 'travel', 'journey', 'destination', 'arrival'],
-      'airplane': ['sky', 'cloud', 'pilot', 'passenger', 'flight', 'airport', 'runway', 'wing', 'engine', 'seat', 'window', 'travel', 'journey', 'destination', 'arrival'],
-      'boat': ['water', 'ocean', 'lake', 'river', 'sail', 'captain', 'crew', 'passenger', 'deck', 'anchor', 'rope', 'fishing', 'swimming', 'wave', 'splash'],
-      'bicycle': ['road', 'path', 'rider', 'wheel', 'pedal', 'handlebar', 'seat', 'helmet', 'basket', 'bell', 'chain', 'tire', 'brake', 'speed', 'exercise'],
-      'truck': ['road', 'highway', 'driver', 'cargo', 'delivery', 'transport', 'engine', 'wheel', 'horn', 'mirror', 'windshield', 'tire', 'brake', 'speed', 'work'],
+      // Activities & Actions (behavioral connections)
+      'play': ['fun', 'games', 'friends', 'toys', 'happy', 'children'],
+      'read': ['book', 'story', 'learning', 'quiet', 'imagination', 'knowledge'],
+      'draw': ['pencil', 'paper', 'art', 'creative', 'colors', 'picture'],
+      'sing': ['music', 'voice', 'song', 'melody', 'happy', 'performance'],
+      'dance': ['music', 'movement', 'fun', 'party', 'rhythm', 'happy'],
       
-      // Sports & Recreation (15 words + associations)
-      'ball': ['game', 'play', 'sport', 'team', 'player', 'field', 'court', 'goal', 'score', 'win', 'lose', 'practice', 'coach', 'uniform', 'trophy'],
-      'game': ['ball', 'play', 'sport', 'team', 'player', 'field', 'court', 'goal', 'score', 'win', 'lose', 'practice', 'coach', 'uniform', 'trophy'],
-      'play': ['ball', 'game', 'sport', 'team', 'player', 'field', 'court', 'goal', 'score', 'win', 'lose', 'practice', 'coach', 'uniform', 'trophy'],
-      'sport': ['ball', 'game', 'play', 'team', 'player', 'field', 'court', 'goal', 'score', 'win', 'lose', 'practice', 'coach', 'uniform', 'trophy'],
-      'team': ['ball', 'game', 'play', 'sport', 'player', 'field', 'court', 'goal', 'score', 'win', 'lose', 'practice', 'coach', 'uniform', 'trophy'],
-      
-      // Food & Cooking (15 words + associations)
-      'pizza': ['cheese', 'tomato', 'pepperoni', 'mushroom', 'oven', 'kitchen', 'restaurant', 'delivery', 'slice', 'crust', 'sauce', 'topping', 'hot', 'delicious', 'dinner'],
-      'cake': ['birthday', 'party', 'candle', 'frosting', 'sprinkle', 'sweet', 'dessert', 'celebration', 'happy', 'gift', 'balloon', 'present', 'friend', 'family', 'chocolate'],
-      'ice cream': ['cold', 'sweet', 'dessert', 'cone', 'sprinkle', 'chocolate', 'vanilla', 'strawberry', 'summer', 'hot', 'refreshing', 'delicious', 'treat', 'party', 'celebration'],
-      'apple': ['fruit', 'red', 'green', 'yellow', 'sweet', 'healthy', 'snack', 'pie', 'juice', 'cider', 'orchard', 'tree', 'fall', 'autumn', 'harvest'],
-      'banana': ['fruit', 'yellow', 'sweet', 'healthy', 'snack', 'monkey', 'peel', 'smoothie', 'bread', 'pancake', 'tropical', 'energy', 'potassium', 'breakfast', 'lunch'],
-      
-      // Magic & Fantasy (15 words + associations)
-      'dragon': ['fire', 'wings', 'scales', 'magic', 'castle', 'knight', 'princess', 'treasure', 'cave', 'mountain', 'flying', 'breathing', 'sword', 'shield', 'adventure'],
-      'fairy': ['wings', 'magic', 'sparkle', 'flower', 'garden', 'forest', 'wand', 'spell', 'princess', 'castle', 'flying', 'glitter', 'pixie', 'dust', 'enchantment'],
-      'wizard': ['magic', 'spell', 'wand', 'hat', 'robe', 'castle', 'dragon', 'princess', 'knight', 'treasure', 'cave', 'mountain', 'adventure', 'potion', 'book'],
-      'unicorn': ['magic', 'horn', 'rainbow', 'sparkle', 'flying', 'forest', 'garden', 'flower', 'princess', 'castle', 'fairy', 'wings', 'glitter', 'pixie', 'dust'],
-      'castle': ['dragon', 'knight', 'princess', 'wizard', 'fairy', 'unicorn', 'treasure', 'cave', 'mountain', 'adventure', 'magic', 'spell', 'wand', 'sword', 'shield'],
-      
-      // Science & Technology (15 words + associations)
-      'robot': ['computer', 'machine', 'technology', 'science', 'laboratory', 'inventor', 'scientist', 'experiment', 'tool', 'gear', 'wire', 'battery', 'program', 'code', 'future'],
-      'computer': ['robot', 'machine', 'technology', 'science', 'laboratory', 'inventor', 'scientist', 'experiment', 'tool', 'gear', 'wire', 'battery', 'program', 'code', 'future'],
-      'science': ['robot', 'computer', 'machine', 'technology', 'laboratory', 'inventor', 'scientist', 'experiment', 'tool', 'gear', 'wire', 'battery', 'program', 'code', 'future'],
-      'experiment': ['robot', 'computer', 'machine', 'technology', 'science', 'laboratory', 'inventor', 'scientist', 'tool', 'gear', 'wire', 'battery', 'program', 'code', 'future'],
-      'laboratory': ['robot', 'computer', 'machine', 'technology', 'science', 'inventor', 'scientist', 'experiment', 'tool', 'gear', 'wire', 'battery', 'program', 'code', 'future']
+      // Family & People (relational connections)
+      'mom': ['family', 'love', 'care', 'home', 'cooking', 'hug'],
+      'dad': ['family', 'love', 'work', 'home', 'strong', 'hug'],
+      'baby': ['small', 'cute', 'family', 'care', 'sleep', 'cry'],
+      'friend': ['play', 'fun', 'together', 'share', 'happy', 'school'],
+      'teacher': ['school', 'learning', 'knowledge', 'help', 'student', 'classroom']
     }
     
-         // Check for direct word matches only (no associations added)
-     for (const [word, associations] of Object.entries(semanticAssociations)) {
-       if (lower.includes(word)) {
-         recognizedWords.push(word)
-         // REMOVED: No longer adding associated words to avoid contamination
-       }
-     }
+    // Check for full word matches only (no partial matches)
+    for (const [word, associations] of Object.entries(semanticAssociations)) {
+      if (promptWords.includes(word)) {
+        recognizedWords.push(word)
+        // REMOVED: No longer adding associated words to avoid contamination
+      }
+    }
     
-    // Also check the original word database categories
+    // CLEAN: Focused word database categories (only essential words)
     const wordDatabase = {
-      // Animals (50 words)
+      // Core Animals (only the most common and recognizable)
       animals: [
         'cat', 'dog', 'bird', 'fish', 'horse', 'cow', 'pig', 'sheep', 'chicken', 'duck',
-        'rabbit', 'mouse', 'hamster', 'guinea pig', 'turtle', 'frog', 'snake', 'lizard',
-        'elephant', 'giraffe', 'lion', 'tiger', 'bear', 'wolf', 'fox', 'deer', 'moose',
-        'zebra', 'monkey', 'gorilla', 'penguin', 'owl', 'eagle', 'hawk', 'parrot',
-        'dolphin', 'whale', 'shark', 'octopus', 'crab', 'lobster', 'butterfly', 'bee',
-        'ant', 'spider', 'dragonfly', 'ladybug', 'caterpillar', 'snail', 'worm', 'bat'
+        'rabbit', 'mouse', 'butterfly', 'bee', 'spider', 'ant', 'ladybug', 'elephant', 
+        'giraffe', 'lion', 'tiger', 'bear', 'fox', 'deer', 'zebra', 'monkey', 'penguin', 
+        'owl', 'eagle', 'dolphin', 'whale', 'shark', 'octopus', 'crab', 'dragonfly', 'snail'
       ],
       
-      // Objects (50 words)
+      // Core Objects (only the most essential)
       objects: [
-        'house', 'car', 'truck', 'bus', 'train', 'airplane', 'helicopter', 'boat', 'ship',
-        'bicycle', 'skateboard', 'scooter', 'ball', 'doll', 'teddy bear', 'robot', 'dinosaur',
-        'castle', 'tower', 'bridge', 'tree', 'flower', 'grass', 'rock', 'mountain', 'river',
-        'lake', 'ocean', 'beach', 'island', 'cloud', 'sun', 'moon', 'star', 'rainbow',
-        'book', 'pencil', 'crayon', 'paper', 'backpack', 'lunchbox', 'umbrella', 'hat',
-        'shoes', 'shirt', 'pants', 'dress', 'coat', 'scarf', 'mittens', 'boots'
+        'house', 'truck', 'bus', 'train', 'airplane', 'boat', 'bicycle', 'ball', 
+        'doll', 'dinosaur', 'castle', 'tree', 'flower', 'mountain', 'river', 
+        'lake', 'ocean', 'beach', 'cloud', 'sun', 'moon', 'star', 'rainbow', 'book', 
+        'pencil', 'paper', 'umbrella', 'hat', 'shoes', 'shirt', 'pants', 'dress'
       ],
       
-      // Actions (50 words)
+      // Core Actions (only the most common)
       actions: [
-        'running', 'walking', 'jumping', 'dancing', 'singing', 'playing', 'reading', 'writing',
-        'drawing', 'painting', 'building', 'cooking', 'eating', 'drinking', 'sleeping', 'waking',
-        'flying', 'swimming', 'climbing', 'sliding', 'swinging', 'riding', 'driving', 'fishing',
-        'gardening', 'cleaning', 'washing', 'brushing', 'combing', 'tying', 'zipping', 'buttoning',
-        'opening', 'closing', 'pushing', 'pulling', 'lifting', 'carrying', 'throwing', 'catching',
-        'kicking', 'hitting', 'bouncing', 'rolling', 'spinning', 'twisting', 'bending', 'stretching',
-        'waving', 'pointing', 'clapping', 'hugging'
+        'run', 'walk', 'jump', 'dance', 'sing', 'play', 'read', 'write', 'draw', 'paint',
+        'build', 'cook', 'eat', 'drink', 'sleep', 'fly', 'swim', 'climb', 'slide', 'swing',
+        'ride', 'drive', 'fish', 'garden', 'clean', 'wash', 'open', 'close', 'push', 'pull'
       ],
       
-      // Places (30 words)
+      // Core Places (only the most important)
       places: [
-        'home', 'school', 'park', 'playground', 'zoo', 'museum', 'library', 'store', 'market',
-        'restaurant', 'hospital', 'fire station', 'police station', 'post office', 'bank',
-        'farm', 'forest', 'jungle', 'desert', 'arctic', 'space', 'moon', 'mars', 'underwater',
-        'cave', 'volcano', 'waterfall', 'canyon', 'valley', 'meadow'
+        'home', 'school', 'park', 'zoo', 'store', 'hospital', 'farm', 'forest', 'beach',
+        'mountain', 'city', 'town', 'village', 'castle', 'cave', 'island', 'desert'
       ],
       
-      // Colors (20 words)
+      // Core Colors (only the basics)
       colors: [
         'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'black', 'white',
-        'gray', 'gold', 'silver', 'rainbow', 'multicolored', 'bright', 'dark', 'light', 'neon', 'pastel'
+        'gray', 'gold', 'silver', 'rainbow'
       ],
       
-      // Weather (20 words)
+      // Core Weather (only the basics)
       weather: [
-        'sunny', 'rainy', 'snowy', 'cloudy', 'windy', 'stormy', 'foggy', 'hot', 'cold', 'warm',
-        'cool', 'dry', 'wet', 'icy', 'slippery', 'muddy', 'dusty', 'breezy', 'calm', 'wild'
+        'sunny', 'rainy', 'snowy', 'cloudy', 'windy', 'stormy', 'hot', 'cold', 'warm', 'cool'
       ],
       
-      // Emotions (20 words)
+      // Core Emotions (only the basics)
       emotions: [
-        'happy', 'sad', 'angry', 'scared', 'surprised', 'excited', 'tired', 'sleepy', 'hungry',
-        'thirsty', 'sick', 'healthy', 'strong', 'weak', 'brave', 'shy', 'friendly', 'lonely',
-        'proud', 'embarrassed'
+        'happy', 'sad', 'angry', 'scared', 'surprised', 'excited', 'tired', 'hungry', 'thirsty'
       ],
       
-      // Family (20 words)
+      // Core Family (only the basics)
       family: [
-        'mom', 'dad', 'mother', 'father', 'sister', 'brother', 'baby', 'grandma', 'grandpa',
-        'aunt', 'uncle', 'cousin', 'family', 'parents', 'children', 'kids', 'boy', 'girl',
-        'friend', 'teacher'
+        'mom', 'dad', 'sister', 'brother', 'baby', 'grandma', 'grandpa', 'family', 'friend'
       ],
       
-      // Food (20 words)
+      // Core Food (only the basics)
       food: [
-        'apple', 'banana', 'orange', 'pizza', 'hamburger', 'hot dog', 'ice cream', 'cake',
-        'cookie', 'bread', 'milk', 'juice', 'water', 'soup', 'salad', 'sandwich', 'chicken',
-        'fish', 'vegetables', 'fruits'
+        'apple', 'banana', 'pizza', 'cake', 'ice cream', 'bread', 'milk', 'water', 'juice'
       ],
       
-      // Toys (20 words)
+      // Core Toys (only the basics)
       toys: [
-        'blocks', 'puzzle', 'game', 'cards', 'dice', 'marbles', 'jacks', 'hopscotch', 'tag',
-        'hide and seek', 'lego', 'playdough', 'bubbles', 'kite', 'balloon', 'stuffed animal',
-        'action figure', 'dollhouse', 'play kitchen', 'tool set'
-      ],
-
-      // NEW: Professions & Jobs (20 words)
-      professions: [
-        'doctor', 'nurse', 'teacher', 'firefighter', 'police officer', 'chef', 'artist', 'musician',
-        'scientist', 'engineer', 'builder', 'farmer', 'pilot', 'driver', 'mail carrier', 'librarian',
-        'dentist', 'veterinarian', 'mechanic', 'gardener'
-      ],
-
-      // NEW: Buildings & Structures (20 words)
-      buildings: [
-        'hospital', 'school', 'library', 'museum', 'store', 'restaurant', 'bank', 'post office',
-        'fire station', 'police station', 'gas station', 'hotel', 'church', 'temple', 'mosque',
-        'synagogue', 'stadium', 'theater', 'cinema', 'mall'
-      ],
-
-      // NEW: Nature & Environment (20 words)
-      nature: [
-        'mountain', 'hill', 'valley', 'canyon', 'cliff', 'cave', 'volcano', 'waterfall', 'river',
-        'stream', 'pond', 'lake', 'ocean', 'beach', 'island', 'desert', 'forest', 'jungle',
-        'meadow', 'grassland'
-      ],
-
-      // NEW: Seasons & Time (20 words)
-      seasons: [
-        'spring', 'summer', 'fall', 'autumn', 'winter', 'morning', 'afternoon', 'evening', 'night',
-        'dawn', 'dusk', 'midnight', 'noon', 'today', 'tomorrow', 'yesterday', 'week', 'month',
-        'year', 'birthday'
-      ],
-
-      // NEW: Body Parts (20 words)
-      bodyParts: [
-        'head', 'face', 'eyes', 'nose', 'mouth', 'ears', 'hair', 'arms', 'hands', 'fingers',
-        'legs', 'feet', 'toes', 'back', 'stomach', 'heart', 'brain', 'teeth', 'tongue', 'neck'
-      ],
-
-      // NEW: Clothing & Fashion (20 words)
-      clothing: [
-        'shirt', 'pants', 'dress', 'skirt', 'jacket', 'coat', 'sweater', 'socks', 'shoes', 'boots',
-        'hat', 'cap', 'scarf', 'gloves', 'mittens', 'belt', 'tie', 'bow tie', 'jewelry', 'watch'
-      ],
-
-      // NEW: Numbers & Math (20 words)
-      numbers: [
-        'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
-        'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen',
-        'nineteen', 'twenty'
-      ],
-
-      // NEW: Shapes & Geometry (20 words)
-      shapes: [
-        'circle', 'square', 'triangle', 'rectangle', 'oval', 'diamond', 'star', 'heart', 'cross',
-        'line', 'curve', 'angle', 'point', 'edge', 'corner', 'side', 'top', 'bottom', 'front', 'back'
-      ],
-
-      // NEW: Sounds & Music (20 words)
-      sounds: [
-        'music', 'song', 'melody', 'rhythm', 'beat', 'drum', 'guitar', 'piano', 'violin', 'flute',
-        'trumpet', 'saxophone', 'harmonica', 'whistle', 'bell', 'chime', 'echo', 'noise', 'silence', 'voice'
+        'ball', 'doll', 'blocks', 'puzzle', 'game', 'cards', 'teddy bear', 'train'
       ]
     }
     
-    // Check each category for recognized words
+    // Check each category for full word matches only
     for (const [category, words] of Object.entries(wordDatabase)) {
       for (const word of words) {
-        if (lower.includes(word)) {
+        if (promptWords.includes(word)) {
           recognizedWords.push(word)
         }
       }
     }
     
-         // Return only the directly recognized words (no associations)
-     return [...new Set(recognizedWords)]
+    // Return only the directly recognized words (no associations)
+    return [...new Set(recognizedWords)]
   }
 
   // NEW: Generate specific scenes from recognized words
@@ -918,30 +827,39 @@ export class AdvancedPromptAnalysisService {
     return stabilityEnhancement
   }
 
-  // Step 1: Our interpretation using word database
+  // Step 1: Our interpretation using word database - PRESERVE ALL ORIGINAL DETAILS
   private createOurInterpretation(userPrompt: string, recognizedWords: string[]): string {
     if (recognizedWords.length === 0) {
       // Better fallback: preserve original prompt instead of defaulting to cars
       return `${userPrompt}, detailed coloring book illustration, clean black line art`
     }
 
-    // Select key words for interpretation
-    const primaryWord = recognizedWords[0]
-    const secondaryWord = recognizedWords[1] || recognizedWords[0]
-     
-     // Create rich interpretation
-     const interpretations = [
-       `${primaryWord} with detailed ${secondaryWord} elements`,
-       `${primaryWord} featuring intricate ${secondaryWord} patterns`,
-       `${primaryWord} showcasing beautiful ${secondaryWord} designs`,
-       `${primaryWord} with elaborate ${secondaryWord} details`,
-       `${primaryWord} displaying complex ${secondaryWord} structures`,
-       `${primaryWord} with artistic ${secondaryWord} compositions`,
-       `${primaryWord} featuring elegant ${secondaryWord} arrangements`,
-       `${primaryWord} with sophisticated ${secondaryWord} layouts`
-     ]
-     
-     return interpretations[Math.floor(Math.random() * interpretations.length)]
+    // PRESERVE ALL ORIGINAL PROMPT DETAILS - don't lose any information!
+    // Start with the original prompt and enhance it, don't replace it
+    let enhancedPrompt = userPrompt
+    
+    // Add context from recognized words if they add value
+    if (recognizedWords.length > 0) {
+      const primaryWord = recognizedWords[0]
+      const secondaryWord = recognizedWords[1] || recognizedWords[0]
+      
+      // Add descriptive context that enhances without replacing
+      const enhancements = [
+        `, with detailed ${primaryWord} elements`,
+        `, featuring intricate ${primaryWord} patterns`,
+        `, showcasing beautiful ${primaryWord} designs`,
+        `, with elaborate ${primaryWord} details`,
+        `, displaying complex ${primaryWord} structures`,
+        `, with artistic ${primaryWord} compositions`,
+        `, featuring elegant ${primaryWord} arrangements`,
+        `, with sophisticated ${primaryWord} layouts`
+      ]
+      
+      // Add one enhancement to preserve all original details
+      enhancedPrompt += enhancements[Math.floor(Math.random() * enhancements.length)]
+    }
+    
+    return enhancedPrompt
    }
 
    // Step 2: Stability AI enhancement with specific rules
