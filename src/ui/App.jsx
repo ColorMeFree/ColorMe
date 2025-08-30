@@ -62,6 +62,19 @@ const dinosaurTimeTravelBook = {
   ]
 }
 
+const spaceRacingBook = {
+  id: 3,
+  title: "Space Racing Champions",
+  category: "adventure",
+  prompt: "spaceships racing and competing in space",
+  images: [
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756519847188-98ukuyfx8.png",
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756519853716-x6847hok3.png",
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756519859618-jv7a289fh.png",
+    "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756519865603-yfynswvou.png"
+  ]
+}
+
 // Popular coloring book categories with sample images (child-friendly)
 const popularBooks = [
   { id: 1, title: "Dinosaur Adventure", category: "dinosaurs", image: "🦖", color: "bg-green-100" },
@@ -718,6 +731,9 @@ export default function App() {
                   {/* Dinosaur Time Travel Book - New Position */}
                   <BookPreview book={dinosaurTimeTravelBook} onClick={() => handleBookSelect(dinosaurTimeTravelBook)} />
                   
+                  {/* Space Racing Book - New Position */}
+                  <BookPreview book={spaceRacingBook} onClick={() => handleBookSelect(spaceRacingBook)} />
+                  
                   {/* Existing Books */}
                   {popularBooks.slice(0, 46).map((book) => (
                     <div key={book.id} className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-purple-200 cursor-pointer" onClick={() => handleBookSelect(book)}>
@@ -754,6 +770,9 @@ export default function App() {
                 
                 {/* Dinosaur Time Travel Book - New Position */}
                 <BookPreview book={dinosaurTimeTravelBook} onClick={() => handleBookSelect(dinosaurTimeTravelBook)} />
+                
+                {/* Space Racing Book - New Position */}
+                <BookPreview book={spaceRacingBook} onClick={() => handleBookSelect(spaceRacingBook)} />
                 
                 {/* Existing Books */}
                 {popularBooks.slice(0, 46).map((book) => (
