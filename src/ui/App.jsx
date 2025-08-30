@@ -88,6 +88,19 @@ const magicalBeastsBook = {
   ]
 }
 
+  const princessDreamsBook = {
+    id: 5,
+    title: "Princess Dreams",
+    category: "fantasy",
+    prompt: "princesses dreaming of castles and fairy tales",
+    images: [
+      "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756523777849-1meb1xy09.png",
+      "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756523784336-uaozrssuj.png",
+      "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756523789514-5agje7m4t.png",
+      "https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756523794387-87rxp89up.png"
+    ]
+  }
+
 // Popular coloring book categories with sample images (child-friendly)
 const popularBooks = [
   { id: 1, title: "Dinosaur Adventure", category: "dinosaurs", image: "🦖", color: "bg-green-100" },
@@ -750,6 +763,9 @@ export default function App() {
                   {/* Magical Beasts Book - New Position */}
                   <BookPreview book={magicalBeastsBook} onClick={() => handleBookSelect(magicalBeastsBook)} />
                   
+                  {/* Princess Dreams Book - New Position */}
+                  <BookPreview book={princessDreamsBook} onClick={() => handleBookSelect(princessDreamsBook)} />
+                  
                   {/* Existing Books */}
                   {popularBooks.slice(0, 46).map((book) => (
                     <div key={book.id} className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-purple-200 cursor-pointer" onClick={() => handleBookSelect(book)}>
@@ -792,6 +808,9 @@ export default function App() {
                 
                 {/* Magical Beasts Book - New Position */}
                 <BookPreview book={magicalBeastsBook} onClick={() => handleBookSelect(magicalBeastsBook)} />
+                
+                {/* Princess Dreams Book - New Position */}
+                <BookPreview book={princessDreamsBook} onClick={() => handleBookSelect(princessDreamsBook)} />
                 
                 {/* Existing Books */}
                 {popularBooks.slice(0, 46).map((book) => (
