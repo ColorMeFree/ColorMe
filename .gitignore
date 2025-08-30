@@ -104,4 +104,8 @@ wrangler.toml.bak
 
 # Secret configuration files
 config.secret
+*.secret
+secrets.json
+secrets.yaml
+secrets.yml
 
