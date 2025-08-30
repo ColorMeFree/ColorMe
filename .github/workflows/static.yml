@@ -31,11 +31,6 @@ jobs:
         run: npm ci
       - name: Build with Vite
         run: npm run build
-        env:
-          VITE_SHOPIFY_DOMAIN: ${{ secrets.SHOPIFY_DOMAIN }}
-          VITE_SHOPIFY_STOREFRONT_TOKEN: ${{ secrets.SHOPIFY_STOREFRONT_TOKEN }}
-          VITE_SHOPIFY_VARIANT_GID: ${{ secrets.SHOPIFY_VARIANT_GID }}
-          VITE_BACKEND_URL: ${{ secrets.BACKEND_URL }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
