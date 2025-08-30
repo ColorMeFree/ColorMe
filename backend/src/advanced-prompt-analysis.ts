@@ -217,20 +217,12 @@ export class AdvancedPromptAnalysisService {
     const scenes: SceneDescription[] = []
     const lower = prompt.toLowerCase()
     
-    // Generate 30 specific, actionable scenes
-    for (let i = 0; i < 30; i++) {
+    // Generate 4 specific, actionable scenes (not 30!)
+    for (let i = 0; i < 4; i++) {
       let specificPrompt = ''
       
-      if (lower.includes('dinosaur') && (lower.includes('computer') || lower.includes('technology') || lower.includes('phone') || lower.includes('escalator') || lower.includes('robot') || lower.includes('car') || lower.includes('tv') || lower.includes('screen'))) {
-        specificPrompt = this.generateDinosaurTechnologyScene(prompt, i)
-      } else if (lower.includes('dragon') && lower.includes('treehouse')) {
-        specificPrompt = this.generateDragonTreehouseScene(prompt, i)
-      } else if (lower.includes('car') && lower.includes('highway')) {
-        specificPrompt = this.generateCarHighwayScene(prompt, i)
-      } else {
-        // Generic specific scene generation
-        specificPrompt = this.generateGenericSpecificScene(prompt, analysis, i)
-      }
+      // Use optimized prompt enhancement system
+      specificPrompt = this.enhancePromptForStability(prompt)
       
       scenes.push({
         sceneNumber: i + 1,
@@ -569,13 +561,12 @@ export class AdvancedPromptAnalysisService {
     return enhancements[sceneIndex % enhancements.length]
   }
 
-  // ENHANCED: Semantic word database with bidirectional associations
+  // ENHANCED: Semantic word database with direct recognition only (no bidirectional associations)
   private getRecognizedWords(prompt: string): string[] {
     const lower = prompt.toLowerCase()
     const recognizedWords: string[] = []
-    const associatedWords: string[] = []
     
-    // Semantic word associations - when one word is found, suggest related words
+    // Check for direct word matches only (no associations)
     const semanticAssociations = {
       // Space & Astronomy (15 words + associations)
       'spaceship': ['shuttle', 'rocket', 'meteor', 'stars', 'planet', 'moon', 'aliens', 'galaxy', 'comet', 'asteroid', 'satellite', 'orbit', 'cosmos', 'nebula', 'black hole'],
@@ -669,15 +660,13 @@ export class AdvancedPromptAnalysisService {
       'laboratory': ['robot', 'computer', 'machine', 'technology', 'science', 'inventor', 'scientist', 'experiment', 'tool', 'gear', 'wire', 'battery', 'program', 'code', 'future']
     }
     
-    // Check for direct word matches and add associated words
-    for (const [word, associations] of Object.entries(semanticAssociations)) {
-      if (lower.includes(word)) {
-        recognizedWords.push(word)
-        // Add 2-3 random associated words to enrich the prompt
-        const shuffled = associations.sort(() => 0.5 - Math.random())
-        associatedWords.push(...shuffled.slice(0, 3))
-      }
-    }
+         // Check for direct word matches only (no associations added)
+     for (const [word, associations] of Object.entries(semanticAssociations)) {
+       if (lower.includes(word)) {
+         recognizedWords.push(word)
+         // REMOVED: No longer adding associated words to avoid contamination
+       }
+     }
     
     // Also check the original word database categories
     const wordDatabase = {
@@ -829,9 +818,8 @@ export class AdvancedPromptAnalysisService {
       }
     }
     
-    // Combine direct matches with semantic associations
-    const allWords = [...new Set([...recognizedWords, ...associatedWords])]
-    return allWords
+         // Return only the directly recognized words (no associations)
+     return [...new Set(recognizedWords)]
   }
 
   // NEW: Generate specific scenes from recognized words
@@ -909,6 +897,124 @@ export class AdvancedPromptAnalysisService {
     
     return `${action} ${word1} and ${word2} ${emotion}`
   }
+
+  // NEW: Optimized prompt enhancement for Stability AI
+  private enhancePromptForStability(userPrompt: string): string {
+    const lower = userPrompt.toLowerCase()
+    
+    // Step 1: Our interpretation using word database
+    const recognizedWords = this.getRecognizedWords(userPrompt)
+    const ourInterpretation = this.createOurInterpretation(userPrompt, recognizedWords)
+    
+    // Step 2: Stability AI enhancement rules
+    const stabilityEnhancement = this.createStabilityEnhancement(ourInterpretation, lower)
+    
+    // Debug logging to see what's happening
+    console.log('Original prompt:', userPrompt)
+    console.log('Recognized words:', recognizedWords)
+    console.log('Our interpretation:', ourInterpretation)
+    console.log('Final prompt:', stabilityEnhancement)
+    
+    return stabilityEnhancement
+  }
+
+  // Step 1: Our interpretation using word database
+  private createOurInterpretation(userPrompt: string, recognizedWords: string[]): string {
+    if (recognizedWords.length === 0) {
+      // Better fallback: preserve original prompt instead of defaulting to cars
+      return `${userPrompt}, detailed coloring book illustration, clean black line art`
+    }
+
+    // Select key words for interpretation
+    const primaryWord = recognizedWords[0]
+    const secondaryWord = recognizedWords[1] || recognizedWords[0]
+     
+     // Create rich interpretation
+     const interpretations = [
+       `${primaryWord} with detailed ${secondaryWord} elements`,
+       `${primaryWord} featuring intricate ${secondaryWord} patterns`,
+       `${primaryWord} showcasing beautiful ${secondaryWord} designs`,
+       `${primaryWord} with elaborate ${secondaryWord} details`,
+       `${primaryWord} displaying complex ${secondaryWord} structures`,
+       `${primaryWord} with artistic ${secondaryWord} compositions`,
+       `${primaryWord} featuring elegant ${secondaryWord} arrangements`,
+       `${primaryWord} with sophisticated ${secondaryWord} layouts`
+     ]
+     
+     return interpretations[Math.floor(Math.random() * interpretations.length)]
+   }
+
+   // Step 2: Stability AI enhancement with specific rules
+   private createStabilityEnhancement(ourInterpretation: string, originalPrompt: string): string {
+     // Base enhancement
+     let enhanced = ourInterpretation
+     
+     // Add specific Stability AI instructions
+     enhanced += ", detailed coloring book illustration"
+     
+     // Add style specifications
+     enhanced += ", clean black line art"
+     enhanced += ", simple outlines"
+     enhanced += ", no shading or gradients"
+     enhanced += ", child-friendly design"
+     
+     // Add composition rules
+     enhanced += ", balanced composition"
+     enhanced += ", clear focal point"
+     enhanced += ", centered subject"
+     
+     // Add quality requirements
+     enhanced += ", no text or letters"
+     enhanced += ", no numbers"
+     enhanced += ", no overlapping elements"
+     enhanced += ", clear separation between parts"
+     
+     // Add specific details based on prompt type
+     if (originalPrompt.includes('butterfly') || originalPrompt.includes('insect')) {
+       enhanced += ", symmetrical wing patterns"
+       enhanced += ", delicate antennae"
+       enhanced += ", graceful proportions"
+     }
+     
+     if (originalPrompt.includes('dragon') || originalPrompt.includes('fantasy')) {
+       enhanced += ", majestic appearance"
+       enhanced += ", detailed scales"
+       enhanced += ", expressive features"
+     }
+     
+     if (originalPrompt.includes('princess') || originalPrompt.includes('fairy')) {
+       enhanced += ", elegant dress details"
+       enhanced += ", flowing hair"
+       enhanced += ", graceful pose"
+     }
+     
+     if (originalPrompt.includes('dinosaur') || originalPrompt.includes('animal')) {
+       enhanced += ", friendly expression"
+       enhanced += ", detailed features"
+       enhanced += ", natural proportions"
+     }
+     
+     if (originalPrompt.includes('car') || originalPrompt.includes('vehicle')) {
+       enhanced += ", clean vehicle design"
+       enhanced += ", clear mechanical details"
+       enhanced += ", smooth lines"
+     }
+     
+     // NEW: Add spider/horror specific details
+     if (originalPrompt.includes('spider') || originalPrompt.includes('web') || originalPrompt.includes('spiderweb')) {
+       enhanced += ", detailed spider anatomy"
+       enhanced += ", intricate web patterns"
+       enhanced += ", eight-legged structure"
+       enhanced += ", web-spinning details"
+     }
+     
+     // Add environment context
+     enhanced += ", simple background"
+     enhanced += ", minimal details"
+     enhanced += ", focus on main subject"
+     
+     return enhanced
+   }
 }
 
 export const advancedPromptAnalysisService = new AdvancedPromptAnalysisService()

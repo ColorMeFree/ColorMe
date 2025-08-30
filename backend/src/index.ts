@@ -43,16 +43,22 @@ app.post('/generate-previews', async (c) => {
   try {
     console.log('Received prompt for preview generation:', prompt)
     
-    // Step 1: Content filtering
+    // Step 1: Content filtering - let Stability AI handle moderation
     const filterResult = contentFilterService.filterPrompt(prompt)
     if (!filterResult.isValid) {
-      return c.json({ 
-        error: filterResult.reason || 'Content not appropriate for children\'s books' 
-      }, 400)
+      // If inappropriate content detected, block generation entirely
+      if (filterResult.shouldBlockGeneration) {
+        return c.json({ 
+          error: filterResult.reason || 'We do not generate inappropriate imagery',
+          shouldReplacePrompt: filterResult.shouldReplacePrompt,
+          replacementText: filterResult.replacementText,
+          shouldBlockGeneration: true
+        }, 400)
+      }
     }
     
-    // Step 2: Sanitize prompt if needed
-    const sanitizedPrompt = contentFilterService.sanitizePrompt(prompt)
+    // Step 2: Use original prompt (let Stability AI handle content moderation)
+    const sanitizedPrompt = prompt
     console.log('Sanitized prompt:', sanitizedPrompt)
     
     // Step 3: Advanced prompt analysis and scene generation
@@ -69,14 +75,7 @@ app.post('/generate-previews', async (c) => {
     const expandedScenes = analysis.expandedScenes.map(scene => scene.prompt)
     console.log('Generated 30 advanced scenes')
     
-    // Step 5: Validate all scenes are appropriate
-    const sceneValidation = contentFilterService.validateScenes(expandedScenes)
-    if (!sceneValidation.isValid) {
-      console.warn('Some generated scenes were inappropriate:', sceneValidation.invalidScenes)
-      // Regenerate scenes if needed
-      const regeneratedAnalysis = await advancedPromptAnalysisService.analyzePrompt(sanitizedPrompt)
-      expandedScenes.splice(0, expandedScenes.length, ...regeneratedAnalysis.expandedScenes.map(scene => scene.prompt))
-    }
+    // Step 5: Let Stability AI handle content moderation (no scene validation)
     
     // Step 6: Get first 4 scenes for preview
     const previewScenes = expandedScenes.slice(0, 4)
