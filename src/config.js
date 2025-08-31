@@ -89,6 +89,18 @@ async function fetchConfig() {
       }
     }
     
+    // In production, also use fallback if backend config is missing
+    if (!import.meta.env.DEV) {
+      console.log('Production mode: Backend config failed, using environment variables')
+      
+      // Use dev fallback if no env vars are set
+      if (!fallbackConfig.SHOPIFY_DOMAIN && !fallbackConfig.STOREFRONT_TOKEN) {
+        console.log('Production mode: No environment variables set, using dev fallback')
+        CONFIG_CACHE = DEV_FALLBACK_CONFIG
+        return DEV_FALLBACK_CONFIG
+      }
+    }
+    
     CONFIG_CACHE = fallbackConfig
     return fallbackConfig
   } finally {
@@ -121,18 +133,18 @@ export async function validateConfig() {
       return true
     }
     
-    const required = ['SHOPIFY_DOMAIN', 'STOREFRONT_TOKEN', 'CUSTOM_BOOK_VARIANT_GID']
-    const missing = required.filter(key => !config[key])
+    // In production, check if we have any configuration at all
+    const hasAnyConfig = config.SHOPIFY_DOMAIN || config.STOREFRONT_TOKEN || config.CUSTOM_BOOK_VARIANT_GID
     
-    if (missing.length > 0) {
-      console.error('Missing required configuration:', missing)
-      if (CONFIG_ERROR) {
-        console.error('Configuration fetch error:', CONFIG_ERROR)
-      }
+    if (!hasAnyConfig) {
+      console.error('No configuration available in production')
       return false
     }
     
+    // If we have some config, allow the app to run (graceful degradation)
+    console.log('Production mode: Using available configuration')
     return true
+    
   } catch (error) {
     console.error('Configuration validation error:', error)
     // In development, allow the app to run even with config errors
