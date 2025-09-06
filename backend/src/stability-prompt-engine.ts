@@ -14,7 +14,7 @@
 
 export class StabilityPromptEngine {
   private apiKey: string
-  private baseUrl = 'https://api.stability.ai'
+  private baseUrl = 'https://api.openai.com'
 
   constructor(apiKey: string) {
     this.apiKey = apiKey
@@ -166,5 +166,5 @@ Now process the user's prompt following these exact rules.`
  * Create a Stability AI prompt engine instance
  */
 export function createStabilityPromptEngine(env: any): StabilityPromptEngine {
-  return new StabilityPromptEngine(env.STABILITY_API_KEY || '')
+  return new StabilityPromptEngine(env.OPENAI_API_KEY || '')
 }
