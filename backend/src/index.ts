@@ -5,8 +5,9 @@ import { shopifyService, createShopifyService } from './shopify'
 import { StabilityAIService } from './stability-ai'
 import { shopifyWebhookHandler } from './shopify-webhooks'
 import { createStorageService } from './storage'
-import { enhancedPromptExpansionService } from './enhanced-prompt-expansion'
-import { advancedPromptAnalysisService } from './advanced-prompt-analysis'
+// OLD PROMPT ANALYSIS SERVICES - NOT IN USE
+// import { enhancedPromptExpansionService } from './enhanced-prompt-expansion-Not In Use'
+// import { advancedPromptAnalysisService } from './advanced-prompt-analysis-Not In Use'
 import { contentFilterService } from './content-filter'
 import { createStabilityAIService } from './stability-ai'
 
@@ -61,19 +62,10 @@ app.post('/generate-previews', async (c) => {
     const sanitizedPrompt = prompt
     console.log('Sanitized prompt:', sanitizedPrompt)
     
-    // Step 3: Advanced prompt analysis and scene generation
-    console.log('Performing advanced prompt analysis...')
-    const analysis = await advancedPromptAnalysisService.analyzePrompt(sanitizedPrompt)
-    console.log('Analysis completed:', {
-      mainElements: analysis.mainElements,
-      characters: analysis.characters,
-      actions: analysis.actions,
-      objects: analysis.objects
-    })
-    
-    // Step 4: Get expanded scenes from analysis
-    const expandedScenes = analysis.expandedScenes.map(scene => scene.prompt)
-    console.log('Generated 30 advanced scenes')
+    // Step 3: Direct prompt pass-through (no analysis - let Stability AI handle everything)
+    console.log('Using direct prompt pass-through to Stability AI...')
+    const expandedScenes = [sanitizedPrompt] // Just use the original prompt
+    console.log('Using original prompt directly')
     
     // Step 5: Let Stability AI handle content moderation (no scene validation)
     
@@ -93,15 +85,14 @@ app.post('/generate-previews', async (c) => {
       console.log('Prompt:', sanitizedPrompt)
       console.log('R2 bucket available:', !!c.env.COLORBOOK_R2)
       
-      // Generate 4 preview images using enhanced prompts
-      console.log('Generating 4 preview images with enhanced prompts...')
+      // Generate 4 preview images using the original prompt (let Stability AI handle variation)
+      console.log('Generating 4 preview images with original prompt...')
       images = []
       
       for (let i = 0; i < 4; i++) {
-        const enhancedPrompt = previewScenes[i]
-        console.log(`Generating image ${i + 1} with prompt:`, enhancedPrompt)
+        console.log(`Generating image ${i + 1} with original prompt:`, sanitizedPrompt)
         
-        const image = await stabilityService.generateColoringPage(enhancedPrompt, c.env.COLORBOOK_R2)
+        const image = await stabilityService.generateColoringPage(sanitizedPrompt, c.env.COLORBOOK_R2)
         images.push(image)
         
         console.log(`Image ${i + 1} generated successfully`)
@@ -131,10 +122,10 @@ app.post('/generate-previews', async (c) => {
       sessionId, 
       images,
       promptId,
-      previewScenes,
+      previewScenes: [sanitizedPrompt], // Just the original prompt
       originalPrompt: prompt,
       sanitizedPrompt: sanitizedPrompt,
-      totalScenes: expandedScenes.length,
+      totalScenes: 1, // Only one scene (the original prompt)
       filterWarning: filterResult.reason
     })
   } catch (error) {
