@@ -370,6 +370,29 @@ app.post('/stability-ai/test', async (c) => {
   }
 })
 
+// Generate comprehensive background image
+app.post('/generate-background', async (c) => {
+  try {
+    const stabilityService = createStabilityAIService(c.env)
+    
+    console.log('Generating comprehensive background image...')
+    const imageUrl = await stabilityService.generateBackgroundImage(c.env.COLORBOOK_R2)
+    
+    return c.json({ 
+      success: true, 
+      imageUrl: imageUrl,
+      message: 'Comprehensive childhood themes background generated successfully'
+    })
+  } catch (error) {
+    console.error('Background generation failed:', error)
+    return c.json({ 
+      success: false, 
+      error: error.message,
+      stack: error.stack
+    }, 500)
+  }
+})
+
 // Shopify webhook for order completion
 app.post('/webhooks/shopify/orders/paid', async (c) => {
   try {

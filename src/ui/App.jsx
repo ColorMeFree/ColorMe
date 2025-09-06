@@ -521,37 +521,80 @@ export default function App() {
     <div className={`min-h-screen relative overflow-hidden transition-all duration-300 ${
       isCartOpen ? 'mr-80' : 'mr-0'
     }`}>
-      {/* Animated Background - Coloring Book Pages Transition */}
+      {/* 2x2 Diagonal Grid Background - Butterfly and Spaceship Books */}
       <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 animate-pulse"></div>
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500"></div>
         
-        {/* Coloring book pages transitioning from colored to black/white */}
-        <div className="absolute top-10 left-10 w-32 h-40 bg-gradient-to-b from-yellow-200 via-orange-200 to-red-200 rounded-lg shadow-lg opacity-30 animate-pulse"></div>
-        <div className="absolute top-20 right-20 w-32 h-40 bg-gradient-to-b from-green-200 via-blue-200 to-purple-200 rounded-lg shadow-lg opacity-25 animate-bounce"></div>
-        <div className="absolute top-40 left-1/4 w-32 h-40 bg-gradient-to-b from-pink-200 via-red-200 to-orange-200 rounded-lg shadow-lg opacity-20 animate-spin"></div>
+        {/* 2x2 Diagonal Grid Layout */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="grid grid-cols-2 grid-rows-2 gap-8 w-full h-full max-w-6xl max-h-4xl p-8">
+            
+            {/* Top Left - Butterfly Book 1 */}
+            <div className="relative transform rotate-3 hover:rotate-0 transition-transform duration-500">
+              <div className="w-full h-full bg-white rounded-2xl shadow-2xl overflow-hidden border-4 border-purple-200">
+                <img 
+                  src="https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756525490829-01sb6pfnn.png"
+                  alt="Butterfly Book 1"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-2xl"></div>
+            </div>
+            
+            {/* Top Right - Spaceship Book 1 */}
+            <div className="relative transform -rotate-3 hover:rotate-0 transition-transform duration-500">
+              <div className="w-full h-full bg-white rounded-2xl shadow-2xl overflow-hidden border-4 border-blue-200">
+                <img 
+                  src="https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756519847188-98ukuyfx8.png"
+                  alt="Spaceship Book 1"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-2xl"></div>
+            </div>
+            
+            {/* Bottom Left - Spaceship Book 2 */}
+            <div className="relative transform -rotate-2 hover:rotate-0 transition-transform duration-500">
+              <div className="w-full h-full bg-white rounded-2xl shadow-2xl overflow-hidden border-4 border-blue-200">
+                <img 
+                  src="https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756519853716-x6847hok3.png"
+                  alt="Spaceship Book 2"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-2xl"></div>
+            </div>
+            
+            {/* Bottom Right - Butterfly Book 2 */}
+            <div className="relative transform rotate-2 hover:rotate-0 transition-transform duration-500">
+              <div className="w-full h-full bg-white rounded-2xl shadow-2xl overflow-hidden border-4 border-purple-200">
+                <img 
+                  src="https://colorbook-backend-worldfrees.3dworldjames.workers.dev/images/coloring-pages/1756525496170-0tc8r2k9o.png"
+                  alt="Butterfly Book 2"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-2xl"></div>
+            </div>
+            
+          </div>
+        </div>
         
-        {/* Black and white versions */}
-        <div className="absolute top-60 right-1/3 w-32 h-40 bg-white border-2 border-gray-300 rounded-lg shadow-lg opacity-40 animate-pulse"></div>
-        <div className="absolute top-80 left-1/3 w-32 h-40 bg-white border-2 border-gray-300 rounded-lg shadow-lg opacity-35 animate-bounce"></div>
-        <div className="absolute top-32 right-1/4 w-32 h-40 bg-white border-2 border-gray-300 rounded-lg shadow-lg opacity-30 animate-spin"></div>
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-white/10 backdrop-blur-[0.5px]"></div>
         
-        {/* More scattered coloring book pages */}
-        <div className="absolute bottom-20 left-10 w-32 h-40 bg-gradient-to-b from-cyan-200 via-blue-200 to-indigo-200 rounded-lg shadow-lg opacity-25 animate-pulse"></div>
-        <div className="absolute bottom-40 right-10 w-32 h-40 bg-white border-2 border-gray-300 rounded-lg shadow-lg opacity-30 animate-bounce"></div>
-        <div className="absolute bottom-60 left-1/3 w-32 h-40 bg-gradient-to-b from-yellow-200 via-green-200 to-blue-200 rounded-lg shadow-lg opacity-20 animate-spin"></div>
-        <div className="absolute bottom-80 right-1/3 w-32 h-40 bg-white border-2 border-gray-300 rounded-lg shadow-lg opacity-35 animate-pulse"></div>
-        
-        {/* Additional scattered elements */}
-        <div className="absolute top-1/4 left-1/2 w-32 h-40 bg-gradient-to-b from-purple-200 via-pink-200 to-red-200 rounded-lg shadow-lg opacity-25 animate-bounce"></div>
-        <div className="absolute top-1/3 right-1/4 w-32 h-40 bg-white border-2 border-gray-300 rounded-lg shadow-lg opacity-30 animate-pulse"></div>
-        <div className="absolute top-2/3 left-1/4 w-32 h-40 bg-gradient-to-b from-orange-200 via-yellow-200 to-green-200 rounded-lg shadow-lg opacity-20 animate-spin"></div>
-        <div className="absolute top-3/4 right-1/2 w-32 h-40 bg-white border-2 border-gray-300 rounded-lg shadow-lg opacity-25 animate-bounce"></div>
+        {/* Floating animated elements */}
+        <div className="absolute top-10 left-10 w-16 h-20 bg-gradient-to-b from-yellow-200/40 via-orange-200/40 to-red-200/40 rounded-lg shadow-lg opacity-30 animate-pulse"></div>
+        <div className="absolute top-20 right-20 w-16 h-20 bg-gradient-to-b from-green-200/40 via-blue-200/40 to-purple-200/40 rounded-lg shadow-lg opacity-25 animate-bounce"></div>
+        <div className="absolute bottom-20 left-10 w-16 h-20 bg-gradient-to-b from-cyan-200/40 via-blue-200/40 to-indigo-200/40 rounded-lg shadow-lg opacity-25 animate-pulse"></div>
+        <div className="absolute bottom-40 right-10 w-16 h-20 bg-white/30 border-2 border-white/40 rounded-lg shadow-lg opacity-30 animate-bounce"></div>
       </div>
 
       {/* Content */}
       <div className="relative z-10">
         {/* Header */}
-        <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-purple-200 shadow-lg">
+        <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-purple-200 shadow-xl">
           <div className="max-w-7xl mx-auto px-4 py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -608,18 +651,29 @@ export default function App() {
                   
                   <div className="max-w-2xl mx-auto">
                     <div className="flex gap-3 mb-4">
-                      <input 
-                        value={prompt} 
-                        onChange={e=>setPrompt(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && canGenerate) {
-                    track('generate_enter_pressed', { prompt: e.target.value })
-                    generateCycle('')
-                  }
-                }}
-                        placeholder="a car being chased by dinosaurs!"
-                        className="flex-1 px-6 py-4 rounded-2xl text-gray-800 text-lg border-0 focus:ring-4 focus:ring-white/30 outline-none"
-                      />
+                      <div className="flex-1 relative">
+                        {/* Rhomboid container */}
+                        <div className="relative transform skew-x-12 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border-2 border-white/50">
+                          <textarea 
+                            value={prompt} 
+                            onChange={e=>setPrompt(e.target.value)}
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter' && canGenerate) {
+                                track('generate_enter_pressed', { prompt: e.target.value })
+                                generateCycle('')
+                              }
+                            }}
+                            placeholder="a car being chased by dinosaurs!"
+                            className="w-full px-6 py-4 text-gray-800 text-lg border-0 focus:ring-4 focus:ring-white/30 outline-none bg-transparent resize-none transform -skew-x-12"
+                            style={{
+                              minHeight: '60px',
+                              maxHeight: '120px', // 2 lines max
+                              height: 'auto'
+                            }}
+                            rows={1}
+                          />
+                        </div>
+                      </div>
                       <button 
                         disabled={!canGenerate}
                 onClick={()=>{
