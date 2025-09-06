@@ -10,6 +10,7 @@ import { createStorageService } from './storage'
 // import { advancedPromptAnalysisService } from './advanced-prompt-analysis-Not In Use'
 import { contentFilterService } from './content-filter'
 import { createStabilityAIService } from './stability-ai'
+import { createStabilityPromptEngine } from './stability-prompt-engine'
 
 const app = new Hono()
 app.use('*', cors())
@@ -62,10 +63,13 @@ app.post('/generate-previews', async (c) => {
     const sanitizedPrompt = prompt
     console.log('Sanitized prompt:', sanitizedPrompt)
     
-    // Step 3: Direct prompt pass-through (no analysis - let Stability AI handle everything)
-    console.log('Using direct prompt pass-through to Stability AI...')
-    const expandedScenes = [sanitizedPrompt] // Just use the original prompt
-    console.log('Using original prompt directly')
+    // Step 3: Use Stability AI prompt engine to improve and generate variations
+    console.log('Using Stability AI prompt engine to improve prompt and generate variations...')
+    const promptEngine = createStabilityPromptEngine(c.env)
+    
+    // Generate 30 variations using Stability AI's prompt improvement engine
+    const expandedScenes = await promptEngine.generateVariations(sanitizedPrompt, 30)
+    console.log(`Generated ${expandedScenes.length} scene variations using Stability AI`)
     
     // Step 5: Let Stability AI handle content moderation (no scene validation)
     
@@ -85,14 +89,15 @@ app.post('/generate-previews', async (c) => {
       console.log('Prompt:', sanitizedPrompt)
       console.log('R2 bucket available:', !!c.env.COLORBOOK_R2)
       
-      // Generate 4 preview images using the original prompt (let Stability AI handle variation)
-      console.log('Generating 4 preview images with original prompt...')
+      // Generate 4 preview images using Stability AI improved prompts
+      console.log('Generating 4 preview images with Stability AI improved prompts...')
       images = []
       
       for (let i = 0; i < 4; i++) {
-        console.log(`Generating image ${i + 1} with original prompt:`, sanitizedPrompt)
+        const improvedPrompt = previewScenes[i]
+        console.log(`Generating image ${i + 1} with improved prompt:`, improvedPrompt)
         
-        const image = await stabilityService.generateColoringPage(sanitizedPrompt, c.env.COLORBOOK_R2)
+        const image = await stabilityService.generateColoringPage(improvedPrompt, c.env.COLORBOOK_R2)
         images.push(image)
         
         console.log(`Image ${i + 1} generated successfully`)
@@ -122,10 +127,10 @@ app.post('/generate-previews', async (c) => {
       sessionId, 
       images,
       promptId,
-      previewScenes: [sanitizedPrompt], // Just the original prompt
+      previewScenes: previewScenes, // Stability AI improved prompts
       originalPrompt: prompt,
       sanitizedPrompt: sanitizedPrompt,
-      totalScenes: 1, // Only one scene (the original prompt)
+      totalScenes: expandedScenes.length, // All 30+ variations from Stability AI
       filterWarning: filterResult.reason
     })
   } catch (error) {
@@ -337,6 +342,17 @@ app.get('/stability-ai/health', async (c) => {
   }
 })
 
+// Stability AI prompt engine health check
+app.get('/stability-ai/prompt-engine/health', async (c) => {
+  try {
+    const promptEngine = createStabilityPromptEngine(c.env)
+    const health = await promptEngine.healthCheck()
+    return c.json(health)
+  } catch (error) {
+    return c.json({ status: 'error', message: 'Prompt engine health check failed' }, 500)
+  }
+})
+
 // Test Stability AI image generation
 app.post('/stability-ai/test', async (c) => {
   try {
@@ -353,6 +369,30 @@ app.post('/stability-ai/test', async (c) => {
     })
   } catch (error) {
     console.error('Stability AI test failed:', error)
+    return c.json({ 
+      success: false, 
+      error: error.message,
+      stack: error.stack
+    }, 500)
+  }
+})
+
+// Test Stability AI prompt engine
+app.post('/stability-ai/prompt-engine/test', async (c) => {
+  try {
+    const { prompt } = await c.req.json()
+    const promptEngine = createStabilityPromptEngine(c.env)
+    
+    console.log('Testing Stability AI prompt engine with prompt:', prompt)
+    const improvedPrompt = await promptEngine.improvePrompt(prompt)
+    
+    return c.json({ 
+      success: true, 
+      originalPrompt: prompt,
+      improvedPrompt: improvedPrompt
+    })
+  } catch (error) {
+    console.error('Stability AI prompt engine test failed:', error)
     return c.json({ 
       success: false, 
       error: error.message,
