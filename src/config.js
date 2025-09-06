@@ -127,32 +127,23 @@ export async function validateConfig() {
   try {
     const config = await getConfig()
     
-    // For development, be more lenient with missing config
-    if (import.meta.env.DEV) {
-      console.log('Development mode: Using fallback configuration')
-      return true
-    }
+    // Always allow the app to run - we'll handle missing config gracefully in the UI
+    console.log('Configuration loaded:', {
+      hasShopifyDomain: !!config.SHOPIFY_DOMAIN,
+      hasStorefrontToken: !!config.STOREFRONT_TOKEN,
+      hasVariantGID: !!config.CUSTOM_BOOK_VARIANT_GID,
+      backendUrl: config.BACKEND_URL
+    })
     
-    // In production, check if we have any configuration at all
-    const hasAnyConfig = config.SHOPIFY_DOMAIN || config.STOREFRONT_TOKEN || config.CUSTOM_BOOK_VARIANT_GID
-    
-    if (!hasAnyConfig) {
-      console.error('No configuration available in production')
-      return false
-    }
-    
-    // If we have some config, allow the app to run (graceful degradation)
-    console.log('Production mode: Using available configuration')
+    // The app should always run, even with missing configuration
+    // We'll show appropriate messages in the UI if features are unavailable
     return true
     
   } catch (error) {
     console.error('Configuration validation error:', error)
-    // In development, allow the app to run even with config errors
-    if (import.meta.env.DEV) {
-      console.log('Development mode: Continuing despite config errors')
-      return true
-    }
-    return false
+    // Always allow the app to run, even with config errors
+    console.log('Continuing despite config errors - app will handle gracefully')
+    return true
   }
 }
 
