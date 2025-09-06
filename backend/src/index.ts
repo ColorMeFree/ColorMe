@@ -195,10 +195,28 @@ app.post('/order-paid', async (c) => {
           throw new Error('Stored prompt not found')
         }
         
-        // Generate remaining 26 pages using actual images (Stability AI disabled)
-        const remainingPages = Array.from({ length: 26 }, (_, i) => 
-          `https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80`
-        )
+        // Generate remaining 26 pages using stored variations (only after payment!)
+        console.log('Generating remaining 26 pages from stored variations...')
+        const stabilityService = createStabilityAIService(c.env)
+        const remainingPages: string[] = []
+        
+        // Use the remaining variations from the stored 30 (skip the first 4 that were used for preview)
+        const remainingVariations = storedPrompt.expandedScenes.slice(4, 30) // Get variations 5-30
+        
+        for (let i = 0; i < remainingVariations.length; i++) {
+          const variationPrompt = remainingVariations[i]
+          console.log(`Generating page ${i + 5} with variation:`, variationPrompt)
+          
+          try {
+            const imageUrl = await stabilityService.generateColoringPage(variationPrompt, c.env.COLORBOOK_R2)
+            remainingPages.push(imageUrl)
+            console.log(`Generated page ${i + 5} successfully`)
+          } catch (error) {
+            console.error(`Failed to generate page ${i + 5}:`, error)
+            // Fallback to placeholder if generation fails
+            remainingPages.push(`https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80`)
+          }
+        }
         
         // Combine chosen images with remaining pages
         const allPages = [
