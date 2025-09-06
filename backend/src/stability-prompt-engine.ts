@@ -42,74 +42,44 @@ export class StabilityPromptEngine {
   }
 
   /**
-   * Add spatial positioning to ensure logical object placement
+   * Add dynamic scene analysis and spatial awareness
+   * Uses wide-net prompts to let Stability AI understand and improve any scene
    */
-  private addSpatialPositioning(prompt: string): string {
-    // Analyze the prompt for key objects and add spatial context
-    let enhancedPrompt = prompt
-    
-    // Common spatial relationships to enforce
-    const spatialRules = [
-      // If there's a vehicle and people, ensure people are inside/on the vehicle
-      {
-        pattern: /(golf cart|car|truck|bus|train|boat|ship)/i,
-        peoplePattern: /(people|person|driver|passenger|rider)/i,
-        addition: ', with people positioned inside the vehicle'
-      },
-      // If there's chasing, ensure proper directional relationship
-      {
-        pattern: /(chasing|following|pursuing)/i,
-        addition: ', with the chaser positioned behind the target'
-      },
-      // If there's a course/field, ensure objects are positioned on it
-      {
-        pattern: /(golf course|field|ground|surface)/i,
-        addition: ', with all objects positioned on the ground surface'
-      },
-      // Specific golf cart scenario - ensure logical positioning
-      {
-        pattern: /(dinosaur.*golf cart|golf cart.*dinosaur)/i,
-        addition: ', with the dinosaur positioned behind the golf cart, and people inside the golf cart'
-      },
-      // Ensure vehicles are on the ground, not floating
-      {
-        pattern: /(golf cart|car|truck|bus)/i,
-        addition: ', with the vehicle positioned on the ground'
-      },
-      // Ensure characters are in logical positions relative to objects
-      {
-        pattern: /(people.*golf cart|golf cart.*people)/i,
-        addition: ', with people seated inside the golf cart'
-      }
+  private addDynamicSceneAnalysis(prompt: string): string {
+    // Wide-net prompts that work for ANY scene type
+    const sceneAnalysisPrompts = [
+      'Analyze the spatial relationships between all objects and characters',
+      'Ensure logical positioning and realistic scene composition',
+      'Create coherent spatial arrangements that make sense',
+      'Position all elements in realistic, believable locations',
+      'Maintain proper scale and perspective relationships',
+      'Ensure characters and objects interact naturally with their environment',
+      'Apply intelligent scene understanding to create believable compositions',
+      'Use contextual awareness to position elements logically',
+      'Create dynamic but coherent spatial relationships'
     ]
     
-    // Apply spatial rules
-    spatialRules.forEach(rule => {
-      if (rule.pattern.test(enhancedPrompt)) {
-        if (rule.peoplePattern && rule.peoplePattern.test(enhancedPrompt)) {
-          enhancedPrompt += rule.addition
-        } else if (!rule.peoplePattern) {
-          enhancedPrompt += rule.addition
-        }
-      }
-    })
+    // Select a few analysis prompts to add context (randomized for variety)
+    const shuffledPrompts = [...sceneAnalysisPrompts].sort(() => Math.random() - 0.5)
+    const selectedPrompts = shuffledPrompts.slice(0, 3)
+    const analysisContext = selectedPrompts.join(', ')
     
-    return enhancedPrompt
+    return `${prompt}, ${analysisContext}`
   }
 
   /**
    * Enhance user prompt for coloring book generation
-   * This adds the necessary coloring book styling and spatial positioning
+   * This adds the necessary coloring book styling and dynamic scene analysis
    */
   private enhancePromptForColoringBook(userPrompt: string): string {
     // Step 1: Remove color words
     const colorFreePrompt = this.removeColorWords(userPrompt)
     
-    // Step 2: Add spatial positioning
-    const spatiallyEnhancedPrompt = this.addSpatialPositioning(colorFreePrompt)
+    // Step 2: Add dynamic scene analysis
+    const sceneAnalyzedPrompt = this.addDynamicSceneAnalysis(colorFreePrompt)
     
-    // Step 3: Add coloring book styling
-    return `Black and white line art, clean outlines, children's coloring book style. ${spatiallyEnhancedPrompt}, optimized for coloring with balanced open spaces, no shading, simple details suitable for children to color, monochrome only.`
+    // Step 3: Add coloring book styling with wide-net scene understanding
+    return `Black and white line art, clean outlines, children's coloring book style. ${sceneAnalyzedPrompt}, optimized for coloring with balanced open spaces, no shading, simple details suitable for children to color, monochrome only, with intelligent scene composition and logical spatial relationships.`
   }
 
   /**
@@ -147,7 +117,7 @@ export class StabilityPromptEngine {
       for (let i = 0; i < count; i++) {
         let variationPrompt = basePrompt
         
-        // Add variation elements to create diversity with spatial awareness
+        // Add variation elements that work with dynamic scene analysis
         const variationElements = [
           'different angle view',
           'alternative composition',
@@ -168,7 +138,12 @@ export class StabilityPromptEngine {
           'alternative scene framing',
           'different depth of field',
           'varying scene density',
-          'alternative lighting setup'
+          'alternative lighting setup',
+          'different spatial arrangement',
+          'alternative scene dynamics',
+          'varying interaction patterns',
+          'different environmental context',
+          'alternative narrative moment'
         ]
         
         // Add variation element every few iterations
@@ -198,7 +173,7 @@ export class StabilityPromptEngine {
       await this.improvePrompt(testPrompt)
       return { status: 'healthy', message: 'Stability AI prompt engine is working' }
     } catch (error) {
-      return { status: 'error', message: `Prompt engine error: ${error.message}` }
+      return { status: 'error', message: `Prompt engine error: ${error instanceof Error ? error.message : 'Unknown error'}` }
     }
   }
 }
