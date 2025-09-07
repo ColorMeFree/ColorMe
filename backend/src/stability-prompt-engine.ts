@@ -42,44 +42,26 @@ export class StabilityPromptEngine {
   }
 
   /**
-   * Add dynamic scene analysis and spatial awareness
-   * Uses wide-net prompts to let Stability AI understand and improve any scene
+   * Add basic scene guidance - let Stability AI handle the rest
    */
-  private addDynamicSceneAnalysis(prompt: string): string {
-    // Wide-net prompts that work for ANY scene type
-    const sceneAnalysisPrompts = [
-      'Analyze the spatial relationships between all objects and characters',
-      'Ensure logical positioning and realistic scene composition',
-      'Create coherent spatial arrangements that make sense',
-      'Position all elements in realistic, believable locations',
-      'Maintain proper scale and perspective relationships',
-      'Ensure characters and objects interact naturally with their environment',
-      'Apply intelligent scene understanding to create believable compositions',
-      'Use contextual awareness to position elements logically',
-      'Create dynamic but coherent spatial relationships'
-    ]
-    
-    // Select a few analysis prompts to add context (randomized for variety)
-    const shuffledPrompts = [...sceneAnalysisPrompts].sort(() => Math.random() - 0.5)
-    const selectedPrompts = shuffledPrompts.slice(0, 3)
-    const analysisContext = selectedPrompts.join(', ')
-    
-    return `${prompt}, ${analysisContext}`
+  private addBasicSceneGuidance(prompt: string): string {
+    // Simple, general guidance that works for any scene
+    return `${prompt}, clear composition`
   }
 
   /**
    * Enhance user prompt for coloring book generation
-   * This adds the necessary coloring book styling and dynamic scene analysis
+   * This adds the necessary coloring book styling and basic scene guidance
    */
   private enhancePromptForColoringBook(userPrompt: string): string {
     // Step 1: Remove color words
     const colorFreePrompt = this.removeColorWords(userPrompt)
     
-    // Step 2: Add dynamic scene analysis
-    const sceneAnalyzedPrompt = this.addDynamicSceneAnalysis(colorFreePrompt)
+    // Step 2: Add basic scene guidance
+    const sceneGuidedPrompt = this.addBasicSceneGuidance(colorFreePrompt)
     
-    // Step 3: Add coloring book styling with wide-net scene understanding
-    return `Black and white line art, clean outlines, children's coloring book style. ${sceneAnalyzedPrompt}, optimized for coloring with balanced open spaces, no shading, simple details suitable for children to color, monochrome only, with intelligent scene composition and logical spatial relationships.`
+    // Step 3: Add coloring book styling
+    return `Black and white line art, clean outlines, children's coloring book style. ${sceneGuidedPrompt}, optimized for coloring with balanced open spaces, no shading, simple details suitable for children to color, monochrome only.`
   }
 
   /**

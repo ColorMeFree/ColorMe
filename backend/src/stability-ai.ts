@@ -113,47 +113,10 @@ export class StabilityAIService {
     return `${promptEnhancements}, ${lineArtTerms.join(', ')}`
   }
 
-  // Analyze prompt and add context-specific enhancements
+  // Analyze prompt and add general enhancements
   private analyzeAndEnhancePrompt(prompt: string): string {
-    const lowerPrompt = prompt.toLowerCase()
-    
-    // Character and creature enhancements
-    if (lowerPrompt.includes('dinosaur') || lowerPrompt.includes('dragon') || lowerPrompt.includes('monster')) {
-      return `${prompt}, friendly cartoon style, big eyes, cute expression`
-    }
-    
-    // Vehicle enhancements
-    if (lowerPrompt.includes('car') || lowerPrompt.includes('truck') || lowerPrompt.includes('train') || lowerPrompt.includes('plane')) {
-      return `${prompt}, cartoon vehicle, simple design, easy to recognize`
-    }
-    
-    // Animal enhancements
-    if (lowerPrompt.includes('animal') || lowerPrompt.includes('cat') || lowerPrompt.includes('dog') || lowerPrompt.includes('bird')) {
-      return `${prompt}, cute cartoon animal, friendly expression, simple features`
-    }
-    
-    // Fantasy enhancements
-    if (lowerPrompt.includes('castle') || lowerPrompt.includes('princess') || lowerPrompt.includes('knight') || lowerPrompt.includes('magic')) {
-      return `${prompt}, fairy tale style, magical elements, child-friendly fantasy`
-    }
-    
-    // Space enhancements
-    if (lowerPrompt.includes('space') || lowerPrompt.includes('planet') || lowerPrompt.includes('rocket') || lowerPrompt.includes('alien')) {
-      return `${prompt}, space adventure, fun sci-fi, colorful planets`
-    }
-    
-    // Nature enhancements
-    if (lowerPrompt.includes('tree') || lowerPrompt.includes('flower') || lowerPrompt.includes('garden') || lowerPrompt.includes('forest')) {
-      return `${prompt}, nature scene, simple plants, peaceful setting`
-    }
-    
-    // Action enhancements
-    if (lowerPrompt.includes('chase') || lowerPrompt.includes('run') || lowerPrompt.includes('jump') || lowerPrompt.includes('play')) {
-      return `${prompt}, action scene, dynamic poses, fun movement`
-    }
-    
-    // Default enhancement for general prompts
-    return `${prompt}, simple cartoon style, easy to understand, fun for kids`
+    // Simple, general enhancement that works for any subject
+    return `${prompt}, simple cartoon style, child-friendly`
   }
 
   // Upload image to storage (Cloudflare R2)
