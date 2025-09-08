@@ -50,43 +50,43 @@ export class StabilityPromptEngine {
   }
 
   /**
-   * Add intelligent scene guidance with character organization rules for Stability AI
+   * Add intelligent scene guidance with dynamic rule generation for Stability AI
    */
   private addIntelligentSceneGuidance(prompt: string): string {
     const lowerPrompt = prompt.toLowerCase()
     
-    // Character organization rules for Stability AI
+    // Dynamic rule generation for Stability AI
     let guidance = prompt
     
-    // Multiple character detection and organization
-    if (this.hasMultipleCharacters(lowerPrompt)) {
+    // Extract and organize characters dynamically
+    const characters = this.extractCharacters(lowerPrompt)
+    if (characters.length > 1) {
       guidance += ', with each character clearly distinguishable and properly positioned'
       
-      // Specific character organization rules
-      if (lowerPrompt.includes('godzilla') && lowerPrompt.includes('kong')) {
-        guidance += ', Godzilla as giant green dinosaur-like monster with spikes on left side, King Kong as giant gorilla-like creature on right side, facing each other clearly separated'
-      } else if (lowerPrompt.includes('superman') && lowerPrompt.includes('batman')) {
-        guidance += ', Superman in blue and red costume on left side, Batman in black costume with cape on right side, facing each other clearly separated'
-      } else if (lowerPrompt.includes('dinosaur') && lowerPrompt.includes('car')) {
-        guidance += ', dinosaur clearly positioned behind or beside the car, people inside the car if applicable, clear separation between characters'
-      } else if (lowerPrompt.includes('fight') || lowerPrompt.includes('battle') || lowerPrompt.includes('against')) {
-        guidance += ', characters positioned on opposite sides facing each other, clear action between them, no character feature mixing'
-      } else if (lowerPrompt.includes('chasing') || lowerPrompt.includes('running after')) {
-        guidance += ', chaser positioned behind target, clear movement direction, appropriate distance between characters'
+      // Generate dynamic character positioning
+      if (characters.length === 2) {
+        guidance += `, ${characters[0]} positioned on left side, ${characters[1]} positioned on right side, facing each other clearly separated`
+      } else if (characters.length > 2) {
+        guidance += ', all characters positioned with clear spatial separation, no overlapping features'
       }
     }
     
-    // Action clarification rules
-    if (lowerPrompt.includes('winning') || lowerPrompt.includes('beating')) {
-      guidance += ', winning character clearly having the advantage, losing character at a disadvantage, clear power dynamic'
+    // Extract and clarify actions dynamically
+    const actions = this.extractActions(lowerPrompt)
+    if (actions.length > 0) {
+      const mainAction = actions[0]
+      guidance += `, main action: ${mainAction}, clear interaction between characters`
     }
     
-    if (lowerPrompt.includes('superpowers') || lowerPrompt.includes('powers')) {
-      guidance += ', superpowers clearly visible and distinct, each character with their own unique abilities'
+    // Extract and enhance settings dynamically
+    const settings = this.extractSettings(lowerPrompt)
+    if (settings.length > 0) {
+      const mainSetting = settings[0]
+      guidance += `, scene set in ${mainSetting}, appropriate environmental details`
     }
     
-    // Scene structure rules
-    if (lowerPrompt.includes('crazy scene') || lowerPrompt.includes('epic')) {
+    // Add dynamic composition rules based on complexity
+    if (characters.length > 2 || actions.length > 1) {
       guidance += ', dynamic composition with clear focal points, balanced layout despite complexity'
     }
     
@@ -97,25 +97,103 @@ export class StabilityPromptEngine {
   }
 
   /**
-   * Check if prompt contains multiple characters
+   * Dynamically extract characters from any prompt
    */
-  private hasMultipleCharacters(prompt: string): boolean {
-    const characterKeywords = [
-      'godzilla', 'kong', 'king kong', 'dinosaur', 'dino', 't-rex', 'triceratops',
-      'superman', 'batman', 'spiderman', 'iron man', 'hulk', 'thor', 'captain america',
-      'cowboy', 'pirate', 'knight', 'princess', 'robot', 'alien', 'monster',
-      'car', 'truck', 'cart', 'golf cart', 'spaceship', 'helicopter', 'airplane',
-      'person', 'people', 'man', 'woman', 'child', 'kid', 'animal', 'creature'
+  private extractCharacters(prompt: string): string[] {
+    const characters: string[] = []
+    
+    // Common character patterns
+    const characterPatterns = [
+      // Animals
+      /\b(dogs?|cats?|birds?|fish|horses?|cows?|pigs?|sheep|goats?|chickens?|ducks?|rabbits?|mice|rats?|hamsters?|guinea pigs?)\b/g,
+      // Mythical creatures
+      /\b(dragons?|unicorns?|fairies?|elves?|dwarves?|giants?|trolls?|goblins?|orcs?|demons?|angels?|ghosts?|zombies?|vampires?|werewolves?)\b/g,
+      // Aliens and robots
+      /\b(aliens?|robots?|androids?|cyborgs?|droids?|machines?)\b/g,
+      // Superheroes
+      /\b(superman|batman|spiderman|iron man|hulk|thor|captain america|wonder woman|flash|green lantern|aquaman|black widow|hawkeye|doctor strange|black panther|ant man|wasp|captain marvel|scarlet witch|vision|falcon|winter soldier|deadpool|wolverine|storm|cyclops|jean grey|magneto|professor x)\b/g,
+      // Monsters
+      /\b(godzilla|king kong|kong|dinosaurs?|dinos?|t-rex|triceratops|stegosaurus|velociraptor|pterodactyl|brontosaurus|monsters?|creatures?)\b/g,
+      // People
+      /\b(people|persons?|men|women|children|kids?|boys?|girls?|babies?|adults?|elders?|seniors?)\b/g,
+      // Professions
+      /\b(cowboys?|pirates?|knights?|princesses?|princes?|kings?|queens?|wizards?|witches?|sorcerers?|magicians?|doctors?|nurses?|teachers?|students?|police|officers?|soldiers?|firefighters?|astronauts?|pilots?|chefs?|artists?|musicians?|dancers?|athletes?|sports players?)\b/g,
+      // Vehicles
+      /\b(cars?|trucks?|buses?|motorcycles?|bicycles?|scooters?|skateboards?|carts?|golf carts?|spaceships?|rockets?|helicopters?|airplanes?|jets?|boats?|ships?|submarines?|trains?|trams?|trolleys?)\b/g
     ]
     
-    let characterCount = 0
-    for (const keyword of characterKeywords) {
-      if (prompt.includes(keyword)) {
-        characterCount++
+    for (const pattern of characterPatterns) {
+      const matches = prompt.match(pattern)
+      if (matches) {
+        characters.push(...matches)
       }
     }
     
-    return characterCount > 1
+    return [...new Set(characters)] // Remove duplicates
+  }
+
+  /**
+   * Dynamically extract actions from any prompt
+   */
+  private extractActions(prompt: string): string[] {
+    const actions: string[] = []
+    
+    const actionPatterns = [
+      // Playing activities
+      /\b(playing|play|games?|sports?|catch|tag|hide and seek|hopscotch|jump rope|marbles?|yo-yo|puzzles?|board games?|card games?)\b/g,
+      // Fighting/conflict
+      /\b(fighting|fight|battling|battle|warring|war|dueling|duel|competing|competition|racing|race|challenging|challenge)\b/g,
+      // Movement
+      /\b(running|run|walking|walk|jumping|jump|hopping|hop|skipping|skip|dancing|dance|swimming|swim|flying|fly|driving|drive|riding|ride|climbing|climb|crawling|crawl)\b/g,
+      // Chasing
+      /\b(chasing|chase|pursuing|pursue|following|follow|hunting|hunt|tracking|track|seeking|seek)\b/g,
+      // Working
+      /\b(working|work|building|build|constructing|construct|creating|create|making|make|cooking|cook|baking|bake|cleaning|clean|fixing|fix|repairing|repair)\b/g,
+      // Learning
+      /\b(learning|learn|studying|study|reading|read|writing|write|drawing|draw|painting|paint|singing|sing|playing music|practicing|practice)\b/g,
+      // Eating
+      /\b(eating|eat|drinking|drink|feeding|feed|snacking|snack|dining|dine|picnicking|picnic)\b/g,
+      // Resting
+      /\b(sleeping|sleep|resting|rest|napping|nap|relaxing|relax|meditating|meditate|dreaming|dream)\b/g
+    ]
+    
+    for (const pattern of actionPatterns) {
+      const matches = prompt.match(pattern)
+      if (matches) {
+        actions.push(...matches)
+      }
+    }
+    
+    return [...new Set(actions)] // Remove duplicates
+  }
+
+  /**
+   * Dynamically extract settings from any prompt
+   */
+  private extractSettings(prompt: string): string[] {
+    const settings: string[] = []
+    
+    const settingPatterns = [
+      // Natural environments
+      /\b(forest|jungle|desert|mountain|mountains?|hill|hills?|valley|valleys?|canyon|canyons?|cave|caves?|beach|beaches?|shore|shores?|coast|coasts?|river|rivers?|lake|lakes?|ocean|oceans?|sea|seas?|pond|ponds?|stream|streams?|waterfall|waterfalls?|meadow|meadows?|field|fields?|prairie|prairies?|tundra|arctic|antarctic|ice|snow|rain|storm|thunderstorm|hurricane|tornado|earthquake|volcano|volcanoes?)\b/g,
+      // Urban environments
+      /\b(city|cities?|town|towns?|village|villages?|neighborhood|neighborhoods?|street|streets?|road|roads?|highway|highways?|bridge|bridges?|park|parks?|playground|playgrounds?|school|schools?|hospital|hospitals?|library|libraries?|museum|museums?|zoo|zoos?|aquarium|aquariums?|circus|circuses?|carnival|carnivals?|fair|fairs?|market|markets?|store|stores?|shop|shops?|restaurant|restaurants?|cafe|cafes?|hotel|hotels?|office|offices?|factory|factories?|warehouse|warehouses?|garage|garages?|barn|barns?|shed|sheds?|house|houses?|home|homes?|apartment|apartments?|building|buildings?|skyscraper|skyscrapers?|tower|towers?|castle|castles?|palace|palaces?|mansion|mansions?|cottage|cottages?|cabin|cabins?|tent|tents?|caravan|caravans?|trailer|trailers?)\b/g,
+      // Space environments
+      /\b(space|outer space|universe|galaxy|galaxies?|planet|planets?|moon|moons?|sun|stars?|asteroid|asteroids?|comet|comets?|meteor|meteors?|nebula|nebulae?|black hole|black holes?|spaceship|spaceships?|space station|space stations?|mars|venus|mercury|jupiter|saturn|uranus|neptune|pluto|earth)\b/g,
+      // Fantasy environments
+      /\b(kingdom|kingdoms?|realm|realms?|land|lands?|world|worlds?|dimension|dimensions?|magic|magical|enchanted|fairy tale|fairy tales?|wonderland|neverland|narnia|middle earth|hogwarts|asgard|valhalla|olympus|underworld|hell|heaven|paradise|utopia|dystopia)\b/g,
+      // Time periods
+      /\b(ancient|medieval|renaissance|victorian|colonial|wild west|cowboy|cowboys?|pirate|pirates?|viking|vikings?|knight|knights?|samurai|ninja|gladiator|gladiators?|caveman|cavemen?|prehistoric|dinosaur|dinosaurs?|ice age|stone age|bronze age|iron age|industrial age|modern|contemporary|future|futuristic|sci-fi|science fiction|steampunk|cyberpunk|post-apocalyptic|apocalypse|zombie|zombies?)\b/g
+    ]
+    
+    for (const pattern of settingPatterns) {
+      const matches = prompt.match(pattern)
+      if (matches) {
+        settings.push(...matches)
+      }
+    }
+    
+    return [...new Set(settings)] // Remove duplicates
   }
 
   /**
