@@ -359,7 +359,18 @@ export default function App() {
         })
       })
       
-      if (!response.ok) throw new Error('Failed to generate previews')
+      if (!response.ok) {
+        // Try to parse error message from backend
+        try {
+          const errorData = await response.json()
+          if (errorData.error) {
+            throw new Error(errorData.error)
+          }
+        } catch (parseError) {
+          // If we can't parse the error, use a generic message
+        }
+        throw new Error('Failed to generate previews')
+      }
       
       const { sessionId, images } = await response.json()
       const id = crypto.randomUUID()
@@ -378,7 +389,12 @@ export default function App() {
       })
     } catch (e) { 
       track('preview_error', { error: e.message, prompt: fullPrompt })
-      setErr(e.message) 
+      setErr(e.message)
+      
+      // Clear error message after 5 seconds
+      setTimeout(() => {
+        setErr(null)
+      }, 5000)
     }
     finally { setBusy(false) }
   }
@@ -863,7 +879,13 @@ export default function App() {
               </section>
 
               {err && (
-                <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6 text-red-700 text-center">
+                <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6 text-red-700 text-center relative">
+                  <button 
+                    onClick={() => setErr(null)}
+                    className="absolute top-2 right-2 text-red-500 hover:text-red-700 font-bold text-xl"
+                  >
+                    ×
+                  </button>
                   <div className="font-bold mb-2">Oops! Something went wrong</div>
                   <div>{err}</div>
                 </div>
