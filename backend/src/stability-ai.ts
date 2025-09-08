@@ -304,6 +304,9 @@ export class StabilityAIService {
       positivePrompt += ", golf course elements properly positioned, clear course layout, appropriate golf equipment placement"
     }
 
+    // Add character organization rules for Stability AI
+    positivePrompt += ", each character clearly distinguishable with distinct features, no character feature mixing, proper spatial separation between all elements"
+
     // Add disappointment-based enhancements
     if (disappointmentRules.disappointmentLevel === 1) {
       positivePrompt += ", fresh perspective, new approach"
@@ -346,6 +349,9 @@ export class StabilityAIService {
     if (contentRules.golfRules) {
       negativePrompt += ", golf equipment floating, unclear course layout, inappropriate golf element placement"
     }
+
+    // Add character organization negatives for Stability AI
+    negativePrompt += ", character feature mixing, overlapping character features, unclear character separation, characters with mixed attributes"
 
     // Add disappointment-based negatives
     if (disappointmentRules.disappointmentLevel === 2) {

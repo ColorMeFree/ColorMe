@@ -50,15 +50,84 @@ export class StabilityPromptEngine {
   }
 
   /**
+   * Add intelligent scene guidance with character organization rules for Stability AI
+   */
+  private addIntelligentSceneGuidance(prompt: string): string {
+    const lowerPrompt = prompt.toLowerCase()
+    
+    // Character organization rules for Stability AI
+    let guidance = prompt
+    
+    // Multiple character detection and organization
+    if (this.hasMultipleCharacters(lowerPrompt)) {
+      guidance += ', with each character clearly distinguishable and properly positioned'
+      
+      // Specific character organization rules
+      if (lowerPrompt.includes('godzilla') && lowerPrompt.includes('kong')) {
+        guidance += ', Godzilla as giant green dinosaur-like monster with spikes on left side, King Kong as giant gorilla-like creature on right side, facing each other clearly separated'
+      } else if (lowerPrompt.includes('superman') && lowerPrompt.includes('batman')) {
+        guidance += ', Superman in blue and red costume on left side, Batman in black costume with cape on right side, facing each other clearly separated'
+      } else if (lowerPrompt.includes('dinosaur') && lowerPrompt.includes('car')) {
+        guidance += ', dinosaur clearly positioned behind or beside the car, people inside the car if applicable, clear separation between characters'
+      } else if (lowerPrompt.includes('fight') || lowerPrompt.includes('battle') || lowerPrompt.includes('against')) {
+        guidance += ', characters positioned on opposite sides facing each other, clear action between them, no character feature mixing'
+      } else if (lowerPrompt.includes('chasing') || lowerPrompt.includes('running after')) {
+        guidance += ', chaser positioned behind target, clear movement direction, appropriate distance between characters'
+      }
+    }
+    
+    // Action clarification rules
+    if (lowerPrompt.includes('winning') || lowerPrompt.includes('beating')) {
+      guidance += ', winning character clearly having the advantage, losing character at a disadvantage, clear power dynamic'
+    }
+    
+    if (lowerPrompt.includes('superpowers') || lowerPrompt.includes('powers')) {
+      guidance += ', superpowers clearly visible and distinct, each character with their own unique abilities'
+    }
+    
+    // Scene structure rules
+    if (lowerPrompt.includes('crazy scene') || lowerPrompt.includes('epic')) {
+      guidance += ', dynamic composition with clear focal points, balanced layout despite complexity'
+    }
+    
+    // General composition rules
+    guidance += ', clear composition with distinct character separation, no overlapping features, each element clearly defined'
+    
+    return guidance
+  }
+
+  /**
+   * Check if prompt contains multiple characters
+   */
+  private hasMultipleCharacters(prompt: string): boolean {
+    const characterKeywords = [
+      'godzilla', 'kong', 'king kong', 'dinosaur', 'dino', 't-rex', 'triceratops',
+      'superman', 'batman', 'spiderman', 'iron man', 'hulk', 'thor', 'captain america',
+      'cowboy', 'pirate', 'knight', 'princess', 'robot', 'alien', 'monster',
+      'car', 'truck', 'cart', 'golf cart', 'spaceship', 'helicopter', 'airplane',
+      'person', 'people', 'man', 'woman', 'child', 'kid', 'animal', 'creature'
+    ]
+    
+    let characterCount = 0
+    for (const keyword of characterKeywords) {
+      if (prompt.includes(keyword)) {
+        characterCount++
+      }
+    }
+    
+    return characterCount > 1
+  }
+
+  /**
    * Enhance user prompt for coloring book generation
-   * This adds the necessary coloring book styling and basic scene guidance
+   * This adds the necessary coloring book styling and intelligent scene guidance
    */
   private enhancePromptForColoringBook(userPrompt: string): string {
     // Step 1: Remove color words
     const colorFreePrompt = this.removeColorWords(userPrompt)
     
-    // Step 2: Add basic scene guidance
-    const sceneGuidedPrompt = this.addBasicSceneGuidance(colorFreePrompt)
+    // Step 2: Add intelligent scene guidance with character organization
+    const sceneGuidedPrompt = this.addIntelligentSceneGuidance(colorFreePrompt)
     
     // Step 3: Add coloring book styling
     return `Black and white line art, clean outlines, children's coloring book style. ${sceneGuidedPrompt}, optimized for coloring with balanced open spaces, no shading, simple details suitable for children to color, monochrome only.`
