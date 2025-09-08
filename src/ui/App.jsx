@@ -272,6 +272,7 @@ export default function App() {
   const [cartItems, setCartItems] = useState([])
   const [cartBusy, setCartBusy] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
+  const [attemptNumber, setAttemptNumber] = useState(1)
 
   // Load cart from cookies on app start
   useEffect(() => {
@@ -352,7 +353,10 @@ export default function App() {
       const response = await fetch(`${CONFIG.BACKEND_URL}/generate-previews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: fullPrompt })
+        body: JSON.stringify({ 
+          prompt: fullPrompt,
+          attemptNumber: attemptNumber
+        })
       })
       
       if (!response.ok) throw new Error('Failed to generate previews')
@@ -361,6 +365,9 @@ export default function App() {
       const id = crypto.randomUUID()
       const next = [...cycles, { id, images, sessionId }]
       setCycles(next)
+      
+      // Increment attempt number for next retry
+      setAttemptNumber(prev => prev + 1)
       
       track('preview_generated', { 
         idx: cycles.length + 1, 
@@ -940,6 +947,7 @@ export default function App() {
               setCartItems([])
               setIsCartOpen(false)
               setPrompt('a car being chased by dinosaurs!')
+              setAttemptNumber(1)
             }}
           />
         )}

@@ -9,11 +9,14 @@ export class StabilityAIService {
     this.apiKey = apiKey
   }
 
-  // Generate coloring book line art
-  async generateColoringPage(prompt: string, r2Bucket?: R2Bucket): Promise<string> {
+  // Generate coloring book line art with advanced rules
+  async generateColoringPage(prompt: string, r2Bucket?: R2Bucket, imageIndex?: number, totalImages?: number, attemptNumber?: number): Promise<string> {
     try {
       // Enhanced prompt with quality requirements
       const enhancedPrompt = this.enhancePromptForLineArt(prompt)
+      
+      // Generate dynamic rules based on image position and attempt number
+      const rules = this.generateStabilityRules(imageIndex, totalImages, attemptNumber, prompt)
       
       const response = await fetch(`${this.baseUrl}/stable-diffusion-xl-1024-v1-0/text-to-image`, {
         method: 'POST',
@@ -28,20 +31,21 @@ export class StabilityAIService {
               weight: 1
             },
             {
-              text: "coloring book style, thick black outlines, clean line art, simple design, no shading, no gradients, no text, no numbers, no letters, child-friendly, clear separation between elements, balanced composition",
-              weight: 1.2
+              text: rules.positivePrompt,
+              weight: rules.positiveWeight
             },
             {
-              text: "deformed, blurry, low quality, text, numbers, letters, overlapping, messy, complex, realistic, photographic, 3d, cgi",
-              weight: -1.0
+              text: rules.negativePrompt,
+              weight: rules.negativeWeight
             }
           ],
-          cfg_scale: 8,
+          cfg_scale: rules.cfgScale,
           height: 1024,
           width: 1024,
           samples: 1,
-          steps: 40,
-          style_preset: "line-art"
+          steps: rules.steps,
+          style_preset: rules.stylePreset,
+          seed: rules.seed
         })
       })
 
@@ -117,6 +121,240 @@ export class StabilityAIService {
   private analyzeAndEnhancePrompt(prompt: string): string {
     // Simple, general enhancement that works for any subject
     return `${prompt}, simple cartoon style, child-friendly`
+  }
+
+  /**
+   * Generate dynamic Stability AI rules based on image position, attempt number, and content
+   */
+  private generateStabilityRules(imageIndex: number = 0, totalImages: number = 30, attemptNumber: number = 1, prompt: string = ''): any {
+    // Base rules
+    const baseRules = {
+      cfgScale: 8,
+      steps: 40,
+      stylePreset: "line-art",
+      positiveWeight: 1.2,
+      negativeWeight: -1.0,
+      seed: Math.floor(Math.random() * 1000000)
+    }
+
+    // Position-based rules
+    const positionRules = this.generatePositionBasedRules(imageIndex, totalImages)
+    
+    // Content-specific rules
+    const contentRules = this.generateContentSpecificRules(prompt)
+    
+    // Disappointment-based rules (for retry system)
+    const disappointmentRules = this.generateDisappointmentRules(attemptNumber)
+
+    // Combine all rules
+    return {
+      ...baseRules,
+      ...positionRules,
+      ...contentRules,
+      ...disappointmentRules,
+      positivePrompt: this.buildPositivePrompt(positionRules, contentRules, disappointmentRules),
+      negativePrompt: this.buildNegativePrompt(positionRules, contentRules, disappointmentRules)
+    }
+  }
+
+  /**
+   * Generate rules based on image position in the book
+   */
+  private generatePositionBasedRules(imageIndex: number, totalImages: number) {
+    const isPreview = imageIndex < 4
+    const isEarlyBook = imageIndex >= 4 && imageIndex < 10
+    const isMidBook = imageIndex >= 10 && imageIndex < 20
+    const isLateBook = imageIndex >= 20
+
+    if (isPreview) {
+      // Preview Images (1-4): High quality, consistent style
+      return {
+        cfgScale: 10,
+        steps: 50,
+        seed: 1000 + imageIndex,
+        styleType: 'preview'
+      }
+    } else if (isEarlyBook) {
+      // Early Book Pages (5-10): Variety introduction
+      return {
+        cfgScale: 12,
+        steps: 45,
+        seed: 2000 + imageIndex,
+        styleType: 'early_book'
+      }
+    } else if (isMidBook) {
+      // Mid Book Pages (11-20): Balanced variety
+      return {
+        cfgScale: 9,
+        steps: 40,
+        seed: 3000 + imageIndex,
+        styleType: 'mid_book'
+      }
+    } else if (isLateBook) {
+      // Late Book Pages (21-30): Maximum variety
+      return {
+        cfgScale: 15,
+        steps: 35,
+        seed: 4000 + imageIndex,
+        styleType: 'late_book'
+      }
+    }
+
+    return {}
+  }
+
+  /**
+   * Generate content-specific rules based on prompt analysis
+   */
+  private generateContentSpecificRules(prompt: string) {
+    const lowerPrompt = prompt.toLowerCase()
+    
+    // Vehicle-specific rules
+    if (lowerPrompt.includes('car') || lowerPrompt.includes('truck') || lowerPrompt.includes('cart') || lowerPrompt.includes('vehicle')) {
+      return {
+        contentType: 'vehicle',
+        vehicleRules: true
+      }
+    }
+    
+    // Dinosaur-specific rules  
+    if (lowerPrompt.includes('dinosaur') || lowerPrompt.includes('dino')) {
+      return {
+        contentType: 'dinosaur',
+        dinosaurRules: true
+      }
+    }
+    
+    // Chase scene rules
+    if (lowerPrompt.includes('chasing') || lowerPrompt.includes('running after') || lowerPrompt.includes('pursuing')) {
+      return {
+        contentType: 'chase',
+        chaseRules: true
+      }
+    }
+
+    // Golf course rules
+    if (lowerPrompt.includes('golf') || lowerPrompt.includes('course')) {
+      return {
+        contentType: 'golf',
+        golfRules: true
+      }
+    }
+    
+    return {
+      contentType: 'general'
+    }
+  }
+
+  /**
+   * Generate disappointment-based rules for retry system
+   */
+  private generateDisappointmentRules(attemptNumber: number) {
+    const disappointmentLevels = [
+      {}, // First attempt - no special rules
+      { // Second attempt - subtle changes
+        cfgScale: 12,
+        seed: 5000 + attemptNumber,
+        disappointmentLevel: 1
+      },
+      { // Third attempt - more dramatic changes
+        cfgScale: 15,
+        seed: 6000 + attemptNumber,
+        disappointmentLevel: 2
+      },
+      { // Fourth attempt - maximum creativity
+        cfgScale: 20,
+        steps: 60,
+        seed: 7000 + attemptNumber,
+        disappointmentLevel: 3
+      }
+    ]
+    
+    return disappointmentLevels[attemptNumber - 1] || {}
+  }
+
+  /**
+   * Build positive prompt based on all rule types
+   */
+  private buildPositivePrompt(positionRules: any, contentRules: any, disappointmentRules: any): string {
+    let positivePrompt = "coloring book style, thick black outlines, clean line art, simple design, no shading, no gradients, no text, no numbers, no letters, child-friendly, clear separation between elements, balanced composition"
+
+    // Add position-based enhancements
+    if (positionRules.styleType === 'preview') {
+      positivePrompt += ", consistent style, high quality details"
+    } else if (positionRules.styleType === 'early_book') {
+      positivePrompt += ", different perspective, varied composition"
+    } else if (positionRules.styleType === 'mid_book') {
+      positivePrompt += ", alternative scene elements, different character poses"
+    } else if (positionRules.styleType === 'late_book') {
+      positivePrompt += ", unique perspective, creative interpretation, different scene dynamics"
+    }
+
+    // Add content-specific enhancements
+    if (contentRules.vehicleRules) {
+      positivePrompt += ", vehicle positioned on ground surface, people inside vehicle if applicable, clear vehicle details, simple background"
+    }
+    if (contentRules.dinosaurRules) {
+      positivePrompt += ", dinosaur positioned logically in scene, clear dinosaur features, appropriate size relationship with other elements"
+    }
+    if (contentRules.chaseRules) {
+      positivePrompt += ", chaser positioned behind target, clear movement direction, appropriate distance between elements"
+    }
+    if (contentRules.golfRules) {
+      positivePrompt += ", golf course elements properly positioned, clear course layout, appropriate golf equipment placement"
+    }
+
+    // Add disappointment-based enhancements
+    if (disappointmentRules.disappointmentLevel === 1) {
+      positivePrompt += ", fresh perspective, new approach"
+    } else if (disappointmentRules.disappointmentLevel === 2) {
+      positivePrompt += ", completely different style, alternative composition, unique interpretation"
+    } else if (disappointmentRules.disappointmentLevel === 3) {
+      positivePrompt += ", maximum creativity, unique perspective, innovative interpretation, completely fresh approach"
+    }
+
+    return positivePrompt
+  }
+
+  /**
+   * Build negative prompt based on all rule types
+   */
+  private buildNegativePrompt(positionRules: any, contentRules: any, disappointmentRules: any): string {
+    let negativePrompt = "deformed, blurry, low quality, text, numbers, letters, overlapping, messy, complex, realistic, photographic, 3d, cgi"
+
+    // Add position-based negatives
+    if (positionRules.styleType === 'preview') {
+      negativePrompt += ", inconsistent style"
+    } else if (positionRules.styleType === 'early_book') {
+      negativePrompt += ", same composition as previous pages"
+    } else if (positionRules.styleType === 'mid_book') {
+      negativePrompt += ", repetitive scenes"
+    } else if (positionRules.styleType === 'late_book') {
+      negativePrompt += ", similar to any previous pages, repetitive elements"
+    }
+
+    // Add content-specific negatives
+    if (contentRules.vehicleRules) {
+      negativePrompt += ", vehicle floating, people outside vehicle when they should be inside, unclear vehicle structure"
+    }
+    if (contentRules.dinosaurRules) {
+      negativePrompt += ", dinosaur in wrong position, unclear dinosaur features, inappropriate size relationships"
+    }
+    if (contentRules.chaseRules) {
+      negativePrompt += ", chaser in front of target, unclear movement, inappropriate positioning"
+    }
+    if (contentRules.golfRules) {
+      negativePrompt += ", golf equipment floating, unclear course layout, inappropriate golf element placement"
+    }
+
+    // Add disappointment-based negatives
+    if (disappointmentRules.disappointmentLevel === 2) {
+      negativePrompt += ", similar to previous attempts, repetitive elements"
+    } else if (disappointmentRules.disappointmentLevel === 3) {
+      negativePrompt += ", similar to any previous attempts, repetitive elements, conventional approach"
+    }
+
+    return negativePrompt
   }
 
   // Upload image to storage (Cloudflare R2)

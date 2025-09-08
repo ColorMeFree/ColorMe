@@ -40,7 +40,7 @@ app.get('/', async (c) => {
 })
 
 app.post('/generate-previews', async (c) => {
-  const { prompt } = await c.req.json()
+  const { prompt, attemptNumber = 1 } = await c.req.json()
   
   try {
     console.log('Received prompt for preview generation:', prompt)
@@ -97,7 +97,14 @@ app.post('/generate-previews', async (c) => {
         const improvedPrompt = previewScenes[i]
         console.log(`Generating image ${i + 1} with improved prompt:`, improvedPrompt)
         
-        const image = await stabilityService.generateColoringPage(improvedPrompt, c.env.COLORBOOK_R2)
+        // Pass image index, total images, and attempt number for advanced rules
+        const image = await stabilityService.generateColoringPage(
+          improvedPrompt, 
+          c.env.COLORBOOK_R2, 
+          i, // imageIndex
+          30, // totalImages
+          attemptNumber // attemptNumber for disappointment rules
+        )
         images.push(image)
         
         console.log(`Image ${i + 1} generated successfully`)
@@ -205,14 +212,22 @@ app.post('/order-paid', async (c) => {
         
         for (let i = 0; i < remainingVariations.length; i++) {
           const variationPrompt = remainingVariations[i]
-          console.log(`Generating page ${i + 5} with variation:`, variationPrompt)
+          const actualImageIndex = i + 4 // Pages 5-30 (index 4-29)
+          console.log(`Generating page ${actualImageIndex + 1} with variation:`, variationPrompt)
           
           try {
-            const imageUrl = await stabilityService.generateColoringPage(variationPrompt, c.env.COLORBOOK_R2)
+            // Pass image index and total images for advanced rules (no attempt number for full book)
+            const imageUrl = await stabilityService.generateColoringPage(
+              variationPrompt, 
+              c.env.COLORBOOK_R2, 
+              actualImageIndex, // imageIndex (4-29 for pages 5-30)
+              30, // totalImages
+              1 // attemptNumber (always 1 for full book generation)
+            )
             remainingPages.push(imageUrl)
-            console.log(`Generated page ${i + 5} successfully`)
+            console.log(`Generated page ${actualImageIndex + 1} successfully`)
           } catch (error) {
-            console.error(`Failed to generate page ${i + 5}:`, error)
+            console.error(`Failed to generate page ${actualImageIndex + 1}:`, error)
             // Fallback to placeholder if generation fails
             remainingPages.push(`https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center&auto=format&q=80`)
           }
